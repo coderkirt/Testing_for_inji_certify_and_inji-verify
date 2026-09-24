@@ -1,0 +1,9 @@
+[
+  { "startBlock": true, "src": "-START-BLOCK-", "blockId": "b1", "msg": "Credential Issuer metadata" },
+  { "result": "SUCCESS", "src": "VCIGetDynamicCredentialIssuerMetadata", "blockId": "b1" },
+  { "result": "SUCCESS", "src": "VCICheckMetadataCredentialIssuer", "blockId": "b1" },
+  { "startBlock": true, "src": "-START-BLOCK-", "blockId": "b2", "msg": "Credential endpoint" },
+  { "result": "SUCCESS", "src": "ValidateCredentialResponseSignature", "blockId": "b2" },
+  { "result": "SUCCESS", "src": "EnsureHttpStatusCodeIs200", "blockId": "b2" },
+  { "result": "SUCCESS", "src": "CheckCredentialResponseFormat", "blockId": "b2" }
+]

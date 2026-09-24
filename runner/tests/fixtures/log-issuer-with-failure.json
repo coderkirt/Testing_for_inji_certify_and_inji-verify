@@ -1,0 +1,14 @@
+[
+  { "startBlock": true, "src": "-START-BLOCK-", "blockId": "b1", "msg": "Credential Issuer metadata" },
+  { "result": "SUCCESS", "src": "VCIGetDynamicCredentialIssuerMetadata", "blockId": "b1" },
+  { "result": "SUCCESS", "src": "VCICheckMetadataCredentialIssuer", "blockId": "b1" },
+  { "result": "SUCCESS", "src": "VCICheckMetadataCredentialEndpoint", "blockId": "b1" },
+  { "startBlock": true, "src": "-START-BLOCK-", "blockId": "b2", "msg": "Authorization endpoint" },
+  { "result": "SUCCESS", "src": "CheckAuthorizationEndpointResponse", "blockId": "b2" },
+  { "result": "WARNING", "src": "EnsureIdTokenDoesNotContainNonRequestedClaims", "blockId": "b2" },
+  { "startBlock": true, "src": "-START-BLOCK-", "blockId": "b3", "msg": "Credential endpoint" },
+  { "result": "FAILURE", "src": "ValidateCredentialResponseSignature", "blockId": "b3" },
+  { "result": "SUCCESS", "src": "EnsureHttpStatusCodeIs200", "blockId": "b3" },
+  { "result": "SUCCESS", "src": "CheckCredentialResponseFormat" },
+  { "_comment": "Entries without a result (info messages) must be ignored by the analyser.", "src": "SomeInfo" }
+]
