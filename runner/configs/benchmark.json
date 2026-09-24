@@ -1,6 +1,20 @@
 {
+  "_comment": "Conformance benchmark gate. Compares a run against what a healthy run looks like and fails the build on anything unexpected. Rates are computed over modules that produced a verdict, so expected failures, documented skips and wallet handoffs never move the pass rate.",
+  "_model": {
+    "passRate": "passed / (passed + failed - toleratedFailures). Tolerated = modules listed in expected-failures.json.",
+    "conditionSuccessRate": "SUCCESS / (SUCCESS + WARNING + FAILURE) over individual conformance conditions, from api/log/{id}.",
+    "baseline": "Set baselineFile (or pass --baseline) to a stored results.json and failOnRegression to gate on regressions against it."
+  },
   "minPassRate": 1.0,
   "failOnUnexpectedFailure": true,
+  "failOnUnexpectedWarning": false,
+  "maxUnexpectedWarnings": 0,
   "failOnUnexpectedSkip": false,
-  "requiredModules": []
+  "maxUnexpectedSkips": 0,
+  "failOnStaleExpectation": true,
+  "failOnHandoff": false,
+  "requiredModules": [],
+  "minConditionSuccessRate": 0.0,
+  "failOnRegression": false,
+  "baselineFile": null
 }
