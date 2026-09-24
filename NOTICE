@@ -1,0 +1,64 @@
+# NOTICE
+
+This repository is the conformance-testing harness for Inji Certify and Inji Verify. The
+harness code is licensed under the **Mozilla Public License, v. 2.0** (see `LICENSE`), which
+is also the license of the MOSIP projects it plugs into.
+
+The files below are not original to this repository. They are either copied from MOSIP's
+Inji Certify / Inji Verify / api-testrig repositories or derived from their configuration,
+and they remain under their upstream license (MPL-2.0) with the upstream copyright notices
+intact. If you redistribute this harness, keep this NOTICE with it.
+
+## Vendored or adapted from MOSIP
+
+| Path | Origin | License |
+| --- | --- | --- |
+| `compose/certify/certify_init.sql` | Inji Certify database seed/schema | MPL-2.0 |
+| `compose/certify/certify-nginx.conf` | Inji Certify nginx configuration, with path-suffixed `/.well-known/*` locations added for this harness | MPL-2.0 |
+| `compose/certify/config/certify-default.properties` | Inji Certify `certify-default.properties` | MPL-2.0 |
+| `compose/certify/config/certify-csvdp-farmer.properties` | Inji Certify demo profile, annotated for this harness | MPL-2.0 |
+| `compose/certify/config/farmer_identity_data.csv` | Inji Certify sample credential data | MPL-2.0 |
+| `compose/certify/config/vp_request_config.json` | Inji Certify VP request configuration | MPL-2.0 |
+| `compose/verify/init.sql` | Inji Verify database init | MPL-2.0 |
+| `compose/verify/config.json` | Inji Verify UI configuration | MPL-2.0 |
+| `testrig-bridge/**` | new code, but written against the MOSIP api-testrig conventions and packages (`io.mosip.testrig.apirig.*`) so it can be dropped into `mosip-functional-tests` | MPL-2.0 |
+
+The `CERTIFY_*` and `VERIFY_*` container images pulled by `compose/docker-compose.yml` are
+MOSIP builds (`injistack/inji-certify-with-plugins`, `injistack/inji-verify-service`,
+`injistack/inji-verify-ui`) and are governed by their own repositories' licenses (MPL-2.0).
+No MOSIP source is vendored into the images by this repository.
+
+## The conformance suite itself
+
+The OpenID Foundation conformance suite is **not** vendored here. It is used as the prebuilt
+container images `registry.gitlab.com/openid/conformance-suite` and
+`registry.gitlab.com/openid/conformance-suite/nginx`, which are independent works:
+
+> MIT License, Copyright (c) 2019-2020 OpenID Foundation
+> <https://gitlab.com/openid/conformance-suite>
+
+OpenID, OpenID4VCI, OpenID4VP and the certification marks are trademarks of the OpenID
+Foundation. This harness is not affiliated with or endorsed by the OpenID Foundation, and a
+green local run is not an OpenID certification.
+
+`scripts/bootstrap-official-scripts.sh` downloads `run-test-plan.py` and its helpers from
+that same repository into `runner/vendor/` (not committed) so the official driver can be run
+for comparison. Those files stay under the MIT license above.
+
+## Runtime and build dependencies
+
+Resolved from package repositories at build/run time; not vendored.
+
+| Dependency | Where | License |
+| --- | --- | --- |
+| `httpx`, `urllib3` | Python runner (`runner/requirements.txt`) | BSD-3-Clause / MIT |
+| TestNG | Java bridge | Apache-2.0 |
+| Jackson (`jackson-databind`, `jackson-core`, `jackson-annotations`) | Java bridge | Apache-2.0 |
+| ExtentReports (and its transitive freemarker, gson, rxjava) | Java bridge | Apache-2.0 |
+| JCommander, SLF4J API | TestNG transitive | Apache-2.0 / MIT |
+| `mongo`, `postgres`, `nginx` images | the compose stack | SSPL-1.0 / PostgreSQL / BSD-2-Clause |
+
+The plans, variants, condition adjudication and expected-failure schema follow the
+OpenID Foundation's own `run-test-plan.py` behaviour so that results are comparable with the
+official driver; that logic was reimplemented here against the documented REST API and the
+suite's log format, and is covered by this repository's license.
