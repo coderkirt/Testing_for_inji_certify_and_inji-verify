@@ -1,0 +1,9 @@
+{
+  "client_auth_type": "private_key_jwt",
+  "fapi_profile": "plain_fapi",
+  "credential_format": "sd_jwt_vc",
+  "fapi_request_method": "unsigned",
+  "sender_constrain": "dpop",
+  "fapi_response_mode": "plain_response",
+  "openid": "openid_connect"
+}

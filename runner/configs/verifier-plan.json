@@ -1,0 +1,11 @@
+{
+  "alias": "inji-verify-openid-1_0",
+  "description": "Inji Verify OpenID4VP 1.0 verifier plan (local harness)",
+  "publish": "everything",
+  "server": {
+    "discoveryUrl": "${VERIFY_ENDPOINT}"
+  },
+  "client": {
+    "client_id": "inji-verify-conformance"
+  }
+}

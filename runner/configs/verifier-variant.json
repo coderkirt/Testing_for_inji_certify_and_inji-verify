@@ -1,0 +1,4 @@
+{
+  "credential_format": "sd_jwt_vc",
+  "response_mode": "direct_post.jwt"
+}

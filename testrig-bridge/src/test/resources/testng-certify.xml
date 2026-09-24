@@ -1,0 +1,11 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="InjiCertify-OpenIDConformance" verbose="1">
+    <listeners>
+        <listener class-name="io.mosip.testrig.apirig.openid.ExtentReportListener"/>
+    </listeners>
+    <test name="certify-issuer-plan">
+        <classes>
+            <class name="io.mosip.testrig.apirig.injicertify.testscripts.OpenIDConformanceTest"/>
+        </classes>
+    </test>
+</suite>

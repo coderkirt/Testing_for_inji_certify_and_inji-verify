@@ -1,0 +1,31 @@
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+*.egg-info/
+
+# Java / Maven
+target/
+testrig-bridge/target/
+
+# Runtime artifacts
+results/
+tmp/
+mongo/data/
+compose/certify/data/
+compose/vendor/
+
+# Official suite scripts downloaded at bootstrap
+runner/vendor/
+
+# Local env
+compose/.env
+.env.local

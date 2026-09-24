@@ -1,0 +1,16 @@
+{
+  "certify": {
+    "component": "certify",
+    "role": "issuer",
+    "planName": "oid4vci-1_0-issuer-test-plan",
+    "variantFile": "issuer-variant.json",
+    "configFile": "issuer-plan.json"
+  },
+  "verify": {
+    "component": "verify",
+    "role": "verifier",
+    "planName": "oid4vp-1final-verifier-haip-test-plan",
+    "variantFile": "verifier-variant.json",
+    "configFile": "verifier-plan.json"
+  }
+}

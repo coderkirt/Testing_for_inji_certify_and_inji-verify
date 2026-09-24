@@ -1,0 +1,6 @@
+{
+  "minPassRate": 1.0,
+  "failOnUnexpectedFailure": true,
+  "failOnUnexpectedSkip": false,
+  "requiredModules": []
+}

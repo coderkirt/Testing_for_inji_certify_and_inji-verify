@@ -1,0 +1,18 @@
+{
+  "alias": "inji-certify-openid-1_0",
+  "description": "Inji Certify OpenID4VCI 1.0 issuer plan (local harness)",
+  "publish": "everything",
+  "server": {
+    "discoveryIssuer": "${CERTIFY_ISSUER_URL}"
+  },
+  "vci": {
+    "credential_issuer_url": "${CERTIFY_ISSUER_URL}",
+    "credential_configuration_id": "${CERTIFY_CREDENTIAL_CONFIGURATION_ID}"
+  },
+  "client": {
+    "client_id": "inji-certify-conformance"
+  },
+  "client2": {
+    "client_id": "inji-certify-conformance-2"
+  }
+}

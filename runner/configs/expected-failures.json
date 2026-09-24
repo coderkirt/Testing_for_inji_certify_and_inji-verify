@@ -1,0 +1,4 @@
+{
+  "_comment": "Map testModule (or testModule[variant=...]) to an expected non-pass. Used as skips in TestNG and as known issues for the benchmark gate.",
+  "modules": {}
+}

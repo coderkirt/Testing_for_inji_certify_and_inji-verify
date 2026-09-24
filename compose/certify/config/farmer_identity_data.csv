@@ -1,0 +1,3 @@
+id,fullName,mobileNumber,dateOfBirth,gender,state,district,villageOrTown,postalCode,landArea,landOwnershipType,primaryCropType,secondaryCropType,face,farmerID
+F001,Ada Farmer,9999999999,1990-01-01,Female,KA,Bangalore,Town,560001,2.5,Owned,Rice,Wheat,,FAR-001
+F002,Ben Farmer,8888888888,1985-05-12,Male,KA,Mysore,Village,570001,4.0,Leased,Maize,Ragi,,FAR-002

@@ -1,0 +1,222 @@
+# Full-stack harness: OpenID Foundation conformance suite + Inji Certify + Inji Verify.
+# Shared network aliases let the suite reach the implementations and vice versa.
+# Usage:
+#   docker compose --env-file compose/.env -f compose/docker-compose.yml up -d
+# Selective:
+#   docker compose ... up -d mongodb server nginx
+#   docker compose ... up -d mongodb server nginx certify-db certify certify-nginx
+#   docker compose ... up -d mongodb server nginx verify-db verify-service verify-ui
+
+name: inji-openid-conformance
+
+services:
+  mongodb:
+    image: ${MONGODB_IMAGE:-mongo:6.0.13}
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - conformance_net
+    logging:
+      driver: json-file
+      options:
+        max-size: "500k"
+        max-file: "5"
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  server:
+    image: registry.gitlab.com/openid/conformance-suite:${IMAGE_TAG:-latest}
+    environment:
+      BASE_URL: ${BASE_URL:-https://localhost.emobix.co.uk:8443}
+      MONGODB_HOST: mongodb
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      OIDC_GOOGLE_CLIENTID: google-client
+      OIDC_GOOGLE_SECRET: google-secret
+      OIDC_GITLAB_CLIENTID: gitlab-client
+      OIDC_GITLAB_SECRET: gitlab-secret
+    depends_on:
+      mongodb:
+        condition: service_started
+    networks:
+      - conformance_net
+    logging:
+      driver: json-file
+      options:
+        max-size: "500k"
+        max-file: "5"
+
+  nginx:
+    image: registry.gitlab.com/openid/conformance-suite/nginx:${IMAGE_TAG:-latest}
+    ports:
+      - "8443:8443"
+    depends_on:
+      - server
+    networks:
+      conformance_net:
+        aliases:
+          - localhost.emobix.co.uk
+    logging:
+      driver: json-file
+      options:
+        max-size: "500k"
+        max-file: "5"
+
+  certify-db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "${CERTIFY_DB_PORT:-5433}:5432"
+    volumes:
+      - ./certify/certify_init.sql:/docker-entrypoint-initdb.d/certify_init.sql:ro
+      - certify-pg:/var/lib/postgresql/data
+    networks:
+      conformance_net:
+        aliases:
+          - database
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 8s
+      timeout: 5s
+      retries: 15
+
+  certify:
+    image: ${CERTIFY_IMAGE:-injistack/inji-certify-with-plugins:0.14.0}
+    user: root
+    ports:
+      - "${CERTIFY_HOST_PORT:-8090}:8090"
+    environment:
+      container_user: mosip
+      active_profile_env: default,csvdp-farmer
+      SPRING_CONFIG_NAME: certify
+      SPRING_CONFIG_LOCATION: /home/mosip/config/
+      enable_certify_artifactory: "false"
+      download_hsm_client: "false"
+      mosip_certify_domain_url: http://certify-nginx:80
+    volumes:
+      - ./certify/config/certify-default.properties:/home/mosip/config/certify-default.properties:ro
+      - ./certify/config/certify-csvdp-farmer.properties:/home/mosip/config/certify-csvdp-farmer.properties:ro
+      - ./certify/config/farmer_identity_data.csv:/home/mosip/config/farmer_identity_data.csv:ro
+      - ./certify/config/vp_request_config.json:/home/mosip/config/vp_request_config.json:ro
+      - certify-pkcs12:/home/mosip/CERTIFY_PKCS12
+    extra_hosts:
+      - "localhost.emobix.co.uk:host-gateway"
+    depends_on:
+      certify-db:
+        condition: service_healthy
+    networks:
+      - conformance_net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8090/v1/certify/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 60s
+
+  certify-nginx:
+    image: nginx:stable
+    ports:
+      - "${CERTIFY_NGINX_PORT:-8091}:80"
+    volumes:
+      - ./certify/certify-nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./certify/config/vp_request_config.json:/config/server/vp_request_config.json:ro
+    depends_on:
+      - certify
+    networks:
+      conformance_net:
+        aliases:
+          - certify-nginx
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/.well-known/openid-credential-issuer >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  verify-db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: inji_verify
+    ports:
+      - "${VERIFY_DB_PORT:-5432}:5432"
+    volumes:
+      - ./verify/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - verify-pg:/var/lib/postgresql/data
+    networks:
+      conformance_net:
+        aliases:
+          - postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d inji_verify"]
+      interval: 8s
+      timeout: 5s
+      retries: 15
+
+  verify-service:
+    image: ${VERIFY_IMAGE:-injistack/inji-verify-service:0.18.2}
+    user: root
+    ports:
+      - "${VERIFY_HOST_PORT:-8080}:8080"
+    environment:
+      active_profile_env: default
+      DATABASE_HOST: verify-db
+      DATABASE_PORT: 5432
+      DATABASE_NAME: inji_verify
+      DATABASE_SCHEMA: verify
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      INJI_VP_REQUEST_LONG_POLLING_TIMEOUT: "55000"
+      INJI_VP_SUBMISSION_BASE_URL: http://verify-service:8080/v1/verify
+      INJI_DID_VERIFY_URI: did:web:verify-service:v1:verify
+      INJI_DID_VERIFY_PUBLIC_KEY_URI: did:web:verify-service:v1:verify#key-0
+      INJI_KEYSTORE_FILE_PASS: mosip
+      INJI_VERIFY_REDIRECT_URI: http://verify-service:8080
+      INJI_VERIFY_RESPONSE_CODE_EXPIRY_TIME_IN_MINS: "5"
+      INJI_VERIFY_CLAIMS_WITH_META_DATA: _sd,_sd_alg,iss,cnf,sub,aud,exp,nbf,iat,cti
+    extra_hosts:
+      - "localhost.emobix.co.uk:host-gateway"
+    depends_on:
+      verify-db:
+        condition: service_healthy
+    networks:
+      - conformance_net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/v1/verify/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 45s
+
+  verify-ui:
+    image: ${VERIFY_UI_IMAGE:-injistack/inji-verify-ui:0.18.2}
+    ports:
+      - "${VERIFY_UI_PORT:-3000}:8000"
+    environment:
+      DEFAULT_TITLE: Inji Verify
+      DEFAULT_LANG: en
+      VP_SUBMISSION_SUPPORTED: "false"
+      CLIENT_ID: inji-verify-ui
+    volumes:
+      - ./verify/config.json:/usr/share/nginx/html/assets/config.json:ro
+    depends_on:
+      - verify-service
+    networks:
+      - conformance_net
+
+networks:
+  conformance_net:
+    name: inji-openid-conformance
+    driver: bridge
+
+volumes:
+  mongo-data:
+  certify-pg:
+  certify-pkcs12:
+  verify-pg:

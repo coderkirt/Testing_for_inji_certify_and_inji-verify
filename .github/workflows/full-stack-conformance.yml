@@ -1,0 +1,88 @@
+name: full-stack-conformance
+
+on:
+  workflow_dispatch:
+    inputs:
+      component:
+        description: certify, verify, or combined
+        required: true
+        default: combined
+        type: choice
+        options:
+          - certify
+          - verify
+          - combined
+  push:
+    branches: [main, master, develop]
+  pull_request:
+
+jobs:
+  conformance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      CONFORMANCE_SERVER: https://localhost.emobix.co.uk:8443/
+      CERTIFY_ISSUER_URL: http://certify-nginx
+      VERIFY_ENDPOINT: http://verify-service:8080/v1/verify
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Map suite hostname
+        run: echo "127.0.0.1 localhost.emobix.co.uk" | sudo tee -a /etc/hosts
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "11"
+
+      - name: Install runner dependencies
+        run: pip install -r runner/requirements.txt
+
+      - name: Start stack
+        run: |
+          cp compose/.env.example compose/.env
+          MODE="${{ github.event.inputs.component || 'combined' }}"
+          SERVICES="mongodb server nginx"
+          if [ "$MODE" = "combined" ] || [ "$MODE" = "certify" ]; then
+            SERVICES="$SERVICES certify-db certify certify-nginx"
+          fi
+          if [ "$MODE" = "combined" ] || [ "$MODE" = "verify" ]; then
+            SERVICES="$SERVICES verify-db verify-service verify-ui"
+          fi
+          docker compose --env-file compose/.env -f compose/docker-compose.yml up -d $SERVICES
+
+      - name: Wait for suite
+        run: |
+          for i in $(seq 1 48); do
+            if curl -kfsS "$CONFORMANCE_SERVER" >/dev/null; then
+              echo ready
+              exit 0
+            fi
+            sleep 5
+          done
+          docker compose -f compose/docker-compose.yml logs --tail=80
+          exit 1
+
+      - name: Run conformance + TestNG bridge
+        run: |
+          MODE="${{ github.event.inputs.component || 'combined' }}"
+          chmod +x scripts/*.sh
+          if [ "$MODE" = "combined" ]; then
+            ./scripts/run-conformance.sh --combined --skip-compose --parallel
+          else
+            ./scripts/run-conformance.sh --component "$MODE" --skip-compose
+          fi
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: conformance-reports
+          path: |
+            results/**
+            testrig-bridge/target/surefire-reports/**
+            testrig-bridge/target/extent/**
