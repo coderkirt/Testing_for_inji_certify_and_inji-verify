@@ -16,6 +16,14 @@
         <testng.version>7.8.0</testng.version>
         <jackson.version>2.17.2</jackson.version>
         <extent.version>5.1.2</extent.version>
+
+        <!-- Empty by default. Without these, an unset -Dconformance.results
+             would be injected as the literal string "${conformance.results}"
+             and ConformanceRunner would believe it had a configured path. -->
+        <conformance.results></conformance.results>
+        <conformance.component></conformance.component>
+        <conformance.repoRoot></conformance.repoRoot>
+        <suiteXmlFile>src/test/resources/testng-certify.xml</suiteXmlFile>
     </properties>
 
     <dependencies>
@@ -46,12 +54,28 @@
                     <systemPropertyVariables>
                         <conformance.results>${conformance.results}</conformance.results>
                         <conformance.component>${conformance.component}</conformance.component>
+                        <conformance.repoRoot>${conformance.repoRoot}</conformance.repoRoot>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
         </plugins>
     </build>
 
+    <!--
+      Two ways to run this module:
+
+        mvn test
+            Runs the unit tests only (ResultMapperTest). No stack, no suite.
+
+        mvn -Pconformance-suite test -DsuiteXmlFile=src/test/resources/testng-certify.xml \
+            -Dconformance.results=../results/certify/results.json -Dconformance.component=certify
+            Runs the TestNG suite. The profile is required: passing
+            -DsuiteXmlFile without it is silently ignored by surefire, which
+            then runs the unit test instead of the suite.
+
+      Each suite XML in src/test/resources also lists ResultMapperTest first, so
+      a suite run proves the mapper before it maps.
+    -->
     <profiles>
         <profile>
             <id>conformance-suite</id>
