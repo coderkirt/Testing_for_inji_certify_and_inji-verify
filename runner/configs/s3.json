@@ -1,0 +1,21 @@
+{
+  "_comment": "Report publishing, using the same config keys as apitest-commons/S3Adapter.java in the MOSIP api-testrig. Precedence is CLI flag > this file > environment, so CI can override everything with secrets. Leave push-reports-to-s3 false for local runs; runner/s3_upload.py reads this file by default.",
+  "_keys": {
+    "push-reports-to-s3": "on/off switch; runner/s3_upload.py is a no-op while this is false",
+    "s3-host": "MinIO or S3-compatible endpoint. Omit for AWS S3; the region is then used to build the URL.",
+    "s3-region": "AWS region, also part of the SigV4 signing scope",
+    "s3-user-key": "access key id. AWS_ACCESS_KEY_ID is accepted as an alias.",
+    "s3-user-secret": "secret access key. AWS_SECRET_ACCESS_KEY is accepted as an alias.",
+    "s3-account": "bucket. The api-testrig default is \"automationtests\", which is also the fallback here.",
+    "reportExpirationInDays": "retention metadata for the published reports",
+    "s3-prefix": "object key prefix. Objects land at <prefix>/<run-id>/<path relative to --source>."
+  },
+  "push-reports-to-s3": false,
+  "s3-host": "",
+  "s3-region": "us-east-1",
+  "s3-user-key": "",
+  "s3-user-secret": "",
+  "s3-account": "automationtests",
+  "reportExpirationInDays": 30,
+  "s3-prefix": "conformance"
+}
