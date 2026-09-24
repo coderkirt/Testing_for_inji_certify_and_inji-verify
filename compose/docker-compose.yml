@@ -86,7 +86,7 @@ services:
       retries: 15
 
   certify:
-    image: ${CERTIFY_IMAGE:-injistack/inji-certify-with-plugins:0.14.0}
+    image: ${CERTIFY_IMAGE:-injistack/inji-certify-with-plugins:1.0.0-alpha.1}
     user: root
     ports:
       - "${CERTIFY_HOST_PORT:-8090}:8090"
@@ -97,7 +97,19 @@ services:
       SPRING_CONFIG_LOCATION: /home/mosip/config/
       enable_certify_artifactory: "false"
       download_hsm_client: "false"
-      mosip_certify_domain_url: http://certify-nginx:80
+      # One source of truth for the issuer identity: the URL Certify advertises
+      # as its issuer id, and the URL the harness hands to the conformance suite.
+      # If these ever disagree the suite reports metadata mismatches.
+      mosip_certify_domain_url: ${CERTIFY_ISSUER_PUBLIC_URL:-http://certify-nginx:80}
+      # Certify acts as its own authorization server. The vendored
+      # certify-default.properties otherwise points the authorization and token
+      # endpoints at https://esignet-mock.collab.mosip.net, i.e. an external
+      # MOSIP mock, which makes an unattended local/CI run impossible. These are
+      # the exact overrides the upstream file documents as "use certify as
+      # authorization server".
+      mosip_certify_authorization_url: ${CERTIFY_ISSUER_PUBLIC_URL:-http://certify-nginx:80}
+      mosip_certify_authn_issuer_uri: ${CERTIFY_ISSUER_PUBLIC_URL:-http://certify-nginx:80}
+      mosip_certify_authn_jwk_set_uri: ${CERTIFY_ISSUER_PUBLIC_URL:-http://certify-nginx:80}/v1/certify/.well-known/jwks.json
     volumes:
       - ./certify/config/certify-default.properties:/home/mosip/config/certify-default.properties:ro
       - ./certify/config/certify-csvdp-farmer.properties:/home/mosip/config/certify-csvdp-farmer.properties:ro
@@ -160,7 +172,7 @@ services:
       retries: 15
 
   verify-service:
-    image: ${VERIFY_IMAGE:-injistack/inji-verify-service:0.18.2}
+    image: ${VERIFY_IMAGE:-injistack/inji-verify-service:latest}
     user: root
     ports:
       - "${VERIFY_HOST_PORT:-8080}:8080"
@@ -195,7 +207,7 @@ services:
       start_period: 45s
 
   verify-ui:
-    image: ${VERIFY_UI_IMAGE:-injistack/inji-verify-ui:0.18.2}
+    image: ${VERIFY_UI_IMAGE:-injistack/inji-verify-ui:latest}
     ports:
       - "${VERIFY_UI_PORT:-3000}:8000"
     environment:
