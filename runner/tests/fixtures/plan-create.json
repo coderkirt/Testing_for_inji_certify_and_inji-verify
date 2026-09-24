@@ -1,0 +1,24 @@
+{
+  "_comment": "Shape of POST api/plan?planName=..&variant=.. - captured from a real OID4VCI 1.0 issuer plan creation.",
+  "id": "CBk3t95rzAZe4",
+  "planName": "oid4vci-1_0-issuer-test-plan",
+  "description": "Inji Certify OpenID4VCI 1.0 issuer plan (local harness)",
+  "variant": {
+    "credential_format": "sd_jwt_vc",
+    "client_auth_type": "private_key_jwt"
+  },
+  "modules": [
+    {
+      "testModule": "oid4vci-1_0-issuer-metadata",
+      "variant": { "credential_format": "sd_jwt_vc" }
+    },
+    {
+      "testModule": "oid4vci-1_0-issuer-happy-flow",
+      "variant": { "credential_format": "sd_jwt_vc" }
+    },
+    {
+      "testModule": "oid4vci-1_0-issuer-happy-flow-additional-requests",
+      "variant": { "credential_format": "sd_jwt_vc" }
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "_comment": "Shape of GET api/info/{id}. One sample per status/result combination the runner has to distinguish.",
+  "finished-passed": {
+    "id": "mod-passed",
+    "testName": "oid4vci-1_0-issuer-metadata",
+    "status": "FINISHED",
+    "result": "PASSED",
+    "variant": { "credential_format": "sd_jwt_vc" }
+  },
+  "finished-with-warnings": {
+    "id": "mod-warning",
+    "testName": "oid4vci-1_0-issuer-happy-flow",
+    "status": "FINISHED",
+    "result": "WARNING",
+    "variant": { "credential_format": "sd_jwt_vc" }
+  },
+  "finished-failed": {
+    "id": "mod-failed",
+    "testName": "oid4vci-1_0-issuer-happy-flow-additional-requests",
+    "status": "FINISHED",
+    "result": "FAILED",
+    "variant": { "credential_format": "sd_jwt_vc" }
+  },
+  "finished-skipped": {
+    "id": "mod-skipped",
+    "testName": "oid4vci-1_0-issuer-some-optional-test",
+    "status": "FINISHED",
+    "result": "SKIPPED",
+    "variant": { "credential_format": "sd_jwt_vc" }
+  },
+  "finished-no-result": {
+    "id": "mod-unknown",
+    "testName": "oid4vci-1_0-issuer-unknown-outcome",
+    "status": "FINISHED",
+    "variant": { "credential_format": "sd_jwt_vc" }
+  },
+  "interrupted": {
+    "id": "mod-interrupted",
+    "testName": "oid4vci-1_0-issuer-interrupted",
+    "status": "INTERRUPTED",
+    "result": "INTERRUPTED",
+    "variant": { "credential_format": "sd_jwt_vc" }
+  },
+  "waiting-handoff": {
+    "id": "mod-waiting",
+    "testName": "oid4vp-1final-verifier-happy-flow",
+    "status": "WAITING",
+    "variant": { "response_mode": "direct_post.jwt" }
+  },
+  "configured-not-started": {
+    "id": "mod-configured",
+    "testName": "oidcc-server-rotate-keys",
+    "status": "CONFIGURED",
+    "variant": {}
+  },
+  "running": {
+    "id": "mod-running",
+    "testName": "oid4vci-1_0-issuer-happy-flow",
+    "status": "RUNNING",
+    "variant": { "credential_format": "sd_jwt_vc" }
+  }
+}
