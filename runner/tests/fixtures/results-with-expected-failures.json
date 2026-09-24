@@ -1,0 +1,146 @@
+{
+  "_comment": "A healthy run: two real passes, one module skipped because it is a known product gap and one skipped because the suite needs a wallet. The original gate computed passed/(passed+failed+skipped) and therefore failed this run at minPassRate 1.0. This is also the fixture the Java ResultMapperTest reads, so the two sides of the bridge cannot drift apart.",
+  "runId": "certify-1767225600",
+  "mode": "certify",
+  "driver": "rest-api",
+  "suiteUrl": "https://localhost.emobox.co.uk:8443/",
+  "endpoints": {
+    "CERTIFY_ISSUER_URL": "http://certify-nginx",
+    "VERIFY_ENDPOINT": "http://verify-service:8080/v1/verify",
+    "CERTIFY_CREDENTIAL_CONFIGURATION_ID": "FarmerCredential",
+    "ENV_ENDPOINT": "http://certify-nginx"
+  },
+  "summary": {
+    "passed": 2,
+    "failed": 0,
+    "gradedFailures": 0,
+    "skipped": 2,
+    "handoffSkips": 1,
+    "total": 4,
+    "ranModules": [
+      "oid4vci-1_0-issuer-metadata",
+      "oid4vci-1_0-issuer-happy-flow",
+      "oid4vci-1_0-issuer-client-attestation",
+      "oid4vci-1_0-issuer-deferred-issuance"
+    ],
+    "passedModules": [
+      "oid4vci-1_0-issuer-metadata",
+      "oid4vci-1_0-issuer-happy-flow"
+    ],
+    "failedModules": [],
+    "skippedModules": [
+      "oid4vci-1_0-issuer-client-attestation",
+      "oid4vci-1_0-issuer-deferred-issuance"
+    ],
+    "adjudicatedModules": 2,
+    "gradedModules": 2,
+    "unexpectedFailures": 0,
+    "moduleUnexpectedFailures": 0,
+    "conditionUnexpectedFailures": 0,
+    "toleratedFailures": 1,
+    "unexpectedWarnings": 0,
+    "unexpectedSkips": 0,
+    "staleExpectations": 0,
+    "errors": 0,
+    "conditions": { "SUCCESS": 49, "WARNING": 1, "FAILURE": 2 }
+  },
+  "benchmarkMet": true,
+  "benchmarkReasons": [],
+  "benchmarkMetrics": {
+    "passRate": 1.0,
+    "adjudicatedModules": 2,
+    "toleratedFailures": 1,
+    "gradedFailures": 0,
+    "conditionSuccessRate": 0.9423076923076923,
+    "conditionCounts": { "SUCCESS": 49, "WARNING": 1, "FAILURE": 2 },
+    "unexpectedFailures": 0,
+    "unexpectedWarnings": 0,
+    "unexpectedSkips": 0,
+    "handoffSkips": 1,
+    "staleExpectations": 0
+  },
+  "benchmarkChecks": [
+    { "name": "minPassRate", "ok": true, "detail": "pass rate 100.00% over 2 adjudicated module(s) < minPassRate 100.00%" },
+    { "name": "unexpectedFailures", "ok": true, "detail": "0 unexpected failure(s)" },
+    { "name": "staleExpectations", "ok": true, "detail": "0 expected failure(s) did not happen - expected-failures.json is stale" }
+  ],
+  "plans": [
+    {
+      "component": "certify",
+      "role": "issuer",
+      "planName": "oid4vci-1_0-issuer-test-plan",
+      "configFile": "issuer-plan.json",
+      "planId": "CBk3t95rzAZe4",
+      "variant": {
+        "client_auth_type": "private_key_jwt",
+        "sender_constrain": "dpop",
+        "credential_format": "sd_jwt_vc"
+      },
+      "exportHtml": "../results/certify/plan-export.html.zip",
+      "modules": [
+        {
+          "testModule": "oid4vci-1_0-issuer-metadata",
+          "status": "FINISHED",
+          "result": "PASSED",
+          "mapped": "PASS",
+          "outcome": "FINISHED",
+          "expectedFailure": false,
+          "expectedSkip": false,
+          "counts": { "SUCCESS": 12, "WARNING": 0, "FAILURE": 0 },
+          "logEntries": 14,
+          "unexpectedFailures": [],
+          "unexpectedWarnings": [],
+          "expectedFailures": [],
+          "expectedFailuresDidNotHappen": []
+        },
+        {
+          "testModule": "oid4vci-1_0-issuer-happy-flow",
+          "status": "FINISHED",
+          "result": "PASSED",
+          "mapped": "PASS",
+          "outcome": "FINISHED",
+          "expectedFailure": false,
+          "expectedSkip": false,
+          "counts": { "SUCCESS": 30, "WARNING": 1, "FAILURE": 0 },
+          "logEntries": 38,
+          "unexpectedFailures": [],
+          "unexpectedWarnings": [],
+          "expectedFailures": [],
+          "expectedFailuresDidNotHappen": []
+        },
+        {
+          "testModule": "oid4vci-1_0-issuer-client-attestation",
+          "status": "FINISHED",
+          "result": "FAILED",
+          "mapped": "SKIP",
+          "outcome": "FINISHED",
+          "expectedFailure": true,
+          "expectedSkip": false,
+          "reason": "client attestation not implemented in Certify 1.0",
+          "counts": { "SUCCESS": 3, "WARNING": 0, "FAILURE": 2 },
+          "logEntries": 6,
+          "unexpectedFailures": [],
+          "unexpectedWarnings": [],
+          "expectedFailures": [],
+          "expectedFailuresDidNotHappen": []
+        },
+        {
+          "testModule": "oid4vci-1_0-issuer-deferred-issuance",
+          "status": "WAITING",
+          "mapped": "SKIP",
+          "outcome": "WAITING",
+          "expectedFailure": false,
+          "expectedSkip": true,
+          "handoff": true,
+          "reason": "suite is waiting for a wallet to complete the presentation",
+          "counts": { "SUCCESS": 4, "WARNING": 0, "FAILURE": 0 },
+          "logEntries": 5,
+          "unexpectedFailures": [],
+          "unexpectedWarnings": [],
+          "expectedFailures": [],
+          "expectedFailuresDidNotHappen": []
+        }
+      ]
+    }
+  ]
+}

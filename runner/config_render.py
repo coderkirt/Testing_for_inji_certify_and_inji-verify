@@ -10,6 +10,9 @@ from typing import Any
 
 _PLACEHOLDER = re.compile(r"\$\{([A-Z0-9_]+)}")
 
+# Directory holding plans.json, the plan configs and the variant files.
+CONFIG_DIR = Path(__file__).resolve().parent / "configs"
+
 
 def load_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
