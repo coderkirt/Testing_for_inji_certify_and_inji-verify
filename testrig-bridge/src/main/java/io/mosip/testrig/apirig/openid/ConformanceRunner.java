@@ -11,29 +11,44 @@ import java.util.concurrent.TimeUnit;
 /**
  * Invokes the Python conformance runner so TestNG can own the same env.endpoint
  * the existing api-testrig already targets.
+ *
+ * The runner is expected to exit non-zero when the benchmark is not met. That is
+ * the normal "tests failed" path, not an error: results.json is still written
+ * and the bridge reports the outcome through TestNG. Only a missing
+ * results.json is treated as an error here.
  */
 public final class ConformanceRunner {
     private ConformanceRunner() {
     }
 
     public static Path ensureResults(String component) throws IOException, InterruptedException {
-        String override = System.getProperty("conformance.results", System.getenv("CONFORMANCE_RESULTS"));
-        if (override != null && !override.isBlank()) {
+        String override = firstNonBlank(
+                System.getProperty("conformance.results"),
+                System.getenv("CONFORMANCE_RESULTS"));
+        if (override != null) {
             Path path = Path.of(override);
             if (Files.exists(path)) {
                 return path;
             }
         }
+
         Path repoRoot = detectRepoRoot();
-        Path results = repoRoot.resolve("results").resolve(component).resolve("results.json");
-        if (Files.exists(results) && Boolean.parseBoolean(System.getProperty("conformance.reuseResults", "false"))) {
+        Path outputDir = repoRoot.resolve("results").resolve(component);
+        Path results = outputDir.resolve("results.json");
+
+        if (Files.exists(results)
+                && Boolean.parseBoolean(System.getProperty("conformance.reuseResults", "false"))) {
             return results;
         }
+
         Path runner = repoRoot.resolve("runner").resolve("run_conformance.py");
         if (!Files.exists(runner)) {
-            throw new IOException("Python runner not found at " + runner);
+            throw new IOException(
+                    "Python conformance runner not found at " + runner
+                            + ". Set -Dconformance.repoRoot or CONFORMANCE_REPO_ROOT to the harness checkout.");
         }
-        results.getParent().toFile().mkdirs();
+
+        Files.createDirectories(outputDir);
         List<String> command = new ArrayList<>();
         command.add(pythonExecutable());
         command.add(runner.toString());
@@ -44,7 +59,7 @@ public final class ConformanceRunner {
             command.add(component);
         }
         command.add("--output-dir");
-        command.add(results.getParent().toString());
+        command.add(outputDir.toString());
 
         String envEndpoint = firstNonBlank(
                 System.getProperty("env.endpoint"),
@@ -54,30 +69,69 @@ public final class ConformanceRunner {
             command.add("--certify-issuer-url");
             command.add(envEndpoint);
         }
-        String verify = firstNonBlank(System.getProperty("verify.endpoint"), System.getenv("VERIFY_ENDPOINT"));
-        if (verify != null) {
-            command.add("--verify-endpoint");
-            command.add(verify);
+
+        addIfSet(command, "--verify-endpoint", firstNonBlank(
+                System.getProperty("verify.endpoint"), System.getenv("VERIFY_ENDPOINT")));
+        addIfSet(command, "--suite-url", firstNonBlank(
+                System.getProperty("conformance.server"), System.getenv("CONFORMANCE_SERVER")));
+        addIfSet(command, "--token", firstNonBlank(
+                System.getProperty("conformance.token"), System.getenv("CONFORMANCE_TOKEN")));
+        addIfSet(command, "--expected-failures", System.getProperty("conformance.expectedFailures"));
+        addIfSet(command, "--expected-skips", System.getProperty("conformance.expectedSkips"));
+        addIfSet(command, "--benchmark", System.getProperty("conformance.benchmark"));
+        addIfSet(command, "--baseline", System.getProperty("conformance.baseline"));
+        addIfSet(command, "--module-timeout", System.getProperty("conformance.moduleTimeout"));
+        addIfSet(command, "--handoff-grace", System.getProperty("conformance.handoffGrace"));
+
+        // Selective execution: comma separated shell wildcards, so a developer
+        // can drive one module from the api-testrig without a full plan run.
+        addPatterns(command, "--only", System.getProperty("conformance.only"));
+        addPatterns(command, "--skip", System.getProperty("conformance.skip"));
+
+        if (Boolean.parseBoolean(System.getProperty("conformance.parallel", "false"))) {
+            command.add("--parallel");
         }
-        String suite = firstNonBlank(System.getProperty("conformance.server"), System.getenv("CONFORMANCE_SERVER"));
-        if (suite != null) {
-            command.add("--suite-url");
-            command.add(suite);
+        if (Boolean.parseBoolean(System.getProperty("conformance.autoStart", "true"))) {
+            command.add("--auto-start");
         }
 
         ProcessBuilder builder = new ProcessBuilder(command);
         builder.directory(repoRoot.toFile());
         builder.inheritIO();
         Process process = builder.start();
-        boolean finished = process.waitFor(2, TimeUnit.HOURS);
+        boolean finished = process.waitFor(6, TimeUnit.HOURS);
         if (!finished) {
             process.destroyForcibly();
-            throw new IOException("Conformance runner timed out");
+            throw new IOException("Conformance runner timed out after 6 hours");
         }
-        if (!Files.exists(results.getParent().resolve("results.json"))) {
-            throw new IOException("Runner exited " + process.exitValue() + " without writing results.json");
+        if (!Files.exists(results)) {
+            throw new IOException(
+                    "Conformance runner exited " + process.exitValue()
+                            + " without writing " + results + " - see the runner output above");
         }
-        return results.getParent().resolve("results.json");
+        // A non-zero exit means the benchmark was not met (or the suite could not
+        // be driven); results.json is authoritative either way.
+        return results;
+    }
+
+    private static void addIfSet(List<String> command, String flag, String value) {
+        if (value != null && !value.isBlank()) {
+            command.add(flag);
+            command.add(value);
+        }
+    }
+
+    private static void addPatterns(List<String> command, String flag, String csv) {
+        if (csv == null || csv.isBlank()) {
+            return;
+        }
+        for (String pattern : csv.split(",")) {
+            String trimmed = pattern.trim();
+            if (!trimmed.isEmpty()) {
+                command.add(flag);
+                command.add(trimmed);
+            }
+        }
     }
 
     private static String pythonExecutable() {
@@ -93,8 +147,10 @@ public final class ConformanceRunner {
     }
 
     private static Path detectRepoRoot() {
-        String configured = firstNonBlank(System.getProperty("conformance.repoRoot"), System.getenv("CONFORMANCE_REPO_ROOT"));
-        if (configured != null) {
+        String configured = firstNonBlank(
+                System.getProperty("conformance.repoRoot"),
+                System.getenv("CONFORMANCE_REPO_ROOT"));
+        if (configured != null && !configured.isBlank()) {
             return Path.of(configured);
         }
         File here = new File(System.getProperty("user.dir"));
