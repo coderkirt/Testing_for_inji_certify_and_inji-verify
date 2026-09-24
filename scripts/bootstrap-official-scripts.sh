@@ -10,4 +10,4 @@ for file in run-test-plan.py conformance.py test_plan_parser.py; do
   curl -fsSL "${BASE}/${file}" -o "${DEST}/${file}"
 done
 echo "Official scripts saved to ${DEST}"
-echo "Use: ./scripts/run-conformance.sh --component certify --official-script ${DEST}/run-test-plan.p
+echo "Use: ./scripts/run-conformance.sh --component certify --official-script ${DEST}/run-test-plan.py"
