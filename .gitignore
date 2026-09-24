@@ -7,6 +7,7 @@ Thumbs.db
 # Python
 __pycache__/
 *.py[cod]
+.pytest_cache/
 .venv/
 venv/
 .env
@@ -15,6 +16,10 @@ venv/
 # Java / Maven
 target/
 testrig-bridge/target/
+test-output/
+# Local build cache: jars/classes used to compile the bridge without a host
+# Maven install. Never commit; reproducible from repo1.maven.org.
+.build-cache/
 
 # Runtime artifacts
 results/
