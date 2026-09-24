@@ -3,6 +3,11 @@
     <listeners>
         <listener class-name="io.mosip.testrig.apirig.openid.ExtentReportListener"/>
     </listeners>
+    <test name="result-mapper-unit-tests">
+        <classes>
+            <class name="io.mosip.testrig.apirig.openid.ResultMapperTest"/>
+        </classes>
+    </test>
     <test name="certify-verify-openid-1_0">
         <classes>
             <class name="io.mosip.testrig.apirig.openid.CombinedOpenIDConformanceTest"/>

@@ -3,6 +3,12 @@
     <listeners>
         <listener class-name="io.mosip.testrig.apirig.openid.ExtentReportListener"/>
     </listeners>
+    <!-- Runs first so a broken mapper is reported before it maps anything. -->
+    <test name="result-mapper-unit-tests">
+        <classes>
+            <class name="io.mosip.testrig.apirig.openid.ResultMapperTest"/>
+        </classes>
+    </test>
     <test name="certify-issuer-plan">
         <classes>
             <class name="io.mosip.testrig.apirig.injicertify.testscripts.OpenIDConformanceTest"/>
