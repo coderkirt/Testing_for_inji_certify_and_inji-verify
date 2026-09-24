@@ -1,4 +1,20 @@
 {
-  "_comment": "Map testModule (or testModule[variant=...]) to an expected non-pass. Used as skips in TestNG and as known issues for the benchmark gate.",
+  "_comment": "Known conformance gaps. Two granularities are supported and can be mixed. Condition level entries are applied while adjudicating the module log (api/log/{id}); a rule that stops firing is itself a failure, so this file cannot silently rot.",
+  "_schemas": {
+    "conditions": "OIDF run-test-plan.py schema. test-name and configuration-filename accept shell wildcards; variant may be \"*\" or a partial map; current-block may be \"*\"; expected-result is 'failure' or 'warning'.",
+    "modules": "Harness shorthand. A module name mapped to a reason (or bare in expected-skips.json) is never started and is reported as a documented SKIP."
+  },
+  "_examples": [
+    {
+      "test-name": "oid4vci-1_0-issuer-*",
+      "configuration-filename": "issuer-plan.json",
+      "variant": { "credential_format": "sd_jwt_vc" },
+      "current-block": "Credential endpoint",
+      "condition": "ValidateCredentialResponseSignature",
+      "expected-result": "failure",
+      "comment": "tracked in ISSUE-123: signature suite mismatch"
+    }
+  ],
+  "conditions": [],
   "modules": {}
 }

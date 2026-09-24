@@ -1,4 +1,6 @@
 {
-  "_comment": "Modules listed here are not started. Use for interactive OpenID4VP handoff tests that cannot run unattended.",
+  "_comment": "Modules that are deliberately not started. The runner already skips OpenID4VP modules that the suite parks in WAITING (wallet handoff) without listing them here - that is detected from the suite status and reported as handoff=true. Use this file for modules that must never be attempted, for example interactive flows with no stubbed wallet.",
+  "_handoff": "See docs/handoff.md. A handoff skip does not fail the gate unless failOnHandoff is set in benchmark.json.",
+  "conditions": [],
   "modules": []
 }
