@@ -18,41 +18,56 @@ def _index(results: dict[str, Any]) -> dict[str, str]:
     return indexed
 
 
+# Bigger is better. A PASS that becomes a SKIP loses coverage and is treated
+# as a regression in its own right, not as an unrelated change.
+_RANK = {"PASS": 2, "SKIP": 1, "FAIL": 0}
+
+
 def diff_results(previous: dict[str, Any], current: dict[str, Any]) -> dict[str, Any]:
     prev = _index(previous)
     curr = _index(current)
     keys = sorted(set(prev) | set(curr))
-    regressions = []
-    fixes = []
-    added = []
-    removed = []
-    unchanged = []
+    regressions: list[dict[str, Any]] = []
+    fixes: list[dict[str, Any]] = []
+    added: list[str] = []
+    removed: list[str] = []
+    changed_other: list[dict[str, Any]] = []
+    skipped_now: list[str] = []
+
     for key in keys:
         if key not in prev:
             added.append(key)
         elif key not in curr:
             removed.append(key)
-        elif prev[key] != curr[key]:
-            entry = {"module": key, "from": prev[key], "to": curr[key]}
-            if curr[key] == "FAIL" and prev[key] == "PASS":
+        else:
+            before, after = prev[key], curr[key]
+            if after == "SKIP":
+                # Surfaced explicitly: a module that became a skip is where an
+                # expected-failures entry can quietly hide a real failure.
+                skipped_now.append(key)
+            if before == after:
+                continue
+            entry = {"module": key, "from": before, "to": after}
+            if _RANK.get(after, 0) < _RANK.get(before, 0):
                 regressions.append(entry)
-            elif curr[key] == "PASS" and prev[key] == "FAIL":
+            elif _RANK.get(after, 0) > _RANK.get(before, 0):
                 fixes.append(entry)
             else:
-                unchanged.append(entry)
-        else:
-            unchanged.append({"module": key, "result": curr[key]})
+                changed_other.append(entry)
+
     return {
         "regressions": regressions,
         "fixes": fixes,
         "added": added,
         "removed": removed,
-        "changedOther": [item for item in unchanged if "from" in item],
+        "skippedNow": skipped_now,
+        "changedOther": changed_other,
         "summary": {
             "previousModules": len(prev),
             "currentModules": len(curr),
             "regressions": len(regressions),
             "fixes": len(fixes),
+            "newlySkipped": len(skipped_now),
         },
     }
 
