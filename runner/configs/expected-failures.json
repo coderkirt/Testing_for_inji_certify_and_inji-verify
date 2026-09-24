@@ -7,6 +7,17 @@
     "oid4vci-1_0-issuer-happy-flow-skip-notification": "Certify 0.14 rejects credential_configuration_id on /issuance/credential",
     "oid4vci-1_0-issuer-fail-unknown-credential-configuration": "Certify 0.14 rejects credential_configuration_id on /issuance/credential",
     "oid4vci-1_0-issuer-fail-unknown-credential-identifier": "Certify 0.14 rejects credential_configuration_id on /issuance/credential",
-    "oid4vci-1_0-issuer-fail-on-access-token-in-query": "Certify 0.14 rejects credential_configuration_id on /issuance/credential"
+    "oid4vci-1_0-issuer-fail-on-access-token-in-query": "Certify 0.14 rejects credential_configuration_id on /issuance/credential",
+    "oid4vp-1final-verifier-happy-flow": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)",
+    "oid4vp-1final-verifier-minimal-cnf-jwk": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)",
+    "oid4vp-1final-verifier-request-uri-method-post": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)",
+    "oid4vp-1final-verifier-request-uri-fetched-twice": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)",
+    "oid4vp-1final-verifier-invalid-kb-jwt-signature": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)",
+    "oid4vp-1final-verifier-invalid-credential-signature": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)",
+    "oid4vp-1final-verifier-invalid-sd-hash": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)",
+    "oid4vp-1final-verifier-invalid-kb-jwt-nonce": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)",
+    "oid4vp-1final-verifier-invalid-kb-jwt-aud": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)",
+    "oid4vp-1final-verifier-kb-jwt-iat-in-past": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)",
+    "oid4vp-1final-verifier-kb-jwt-iat-in-future": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)"
   }
 }

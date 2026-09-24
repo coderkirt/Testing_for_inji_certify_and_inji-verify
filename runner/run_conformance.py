@@ -139,6 +139,26 @@ FARMER_CLAIMS = {
     "farmerID": "FAR-001",
 }
 
+SD_JWT_PRESENTATION_DEFINITION = {
+    "id": "inji-verify-conformance-sd-jwt",
+    "purpose": "OpenID conformance wallet presentation",
+    "format": {"vc+sd-jwt": {"sd-jwt_alg_values": ["ES256"]}},
+    "input_descriptors": [
+        {
+            "id": "pid",
+            "format": {"vc+sd-jwt": {"sd-jwt_alg_values": ["ES256"]}},
+            "constraints": {"fields": [{"path": ["$.vct"]}]},
+        }
+    ],
+}
+
+
+def _safe_waiting(fn, client: OidfClient, test_id: str, info: dict[str, Any], mapping: dict[str, str]) -> None:
+    try:
+        fn(client, test_id, info, mapping)
+    except Exception as exc:  # noqa: BLE001
+        print(f"WAITING handoff failed for {test_id}: {exc}")
+
 
 def _exposed_value(info: dict[str, Any], key: str) -> Optional[str]:
     exposed = info.get("exposed") or info.get("exposedValues") or {}
@@ -180,6 +200,57 @@ def deliver_credential_offer(client: OidfClient, test_id: str, info: dict[str, A
     print(f"Delivering credential offer for {test_id}")
     # Suite 5.31 rejects http:// offer URIs; send the offer by value instead.
     client._client.get(offer_url, params={"credential_offer": json.dumps(offer_json)})
+
+
+def deliver_vp_authorization_request(
+    client: OidfClient, test_id: str, info: dict[str, Any], mapping: dict[str, str]
+) -> None:
+    """When the suite wallet is WAITING, create a Verify VP request and hand it over."""
+    verify_api = os.environ.get("VERIFY_API_URL", "http://localhost:18080/v1/verify")
+    client_id = os.environ.get("VERIFY_DID", "did:web:verify-service:v1:verify")
+    verify = httpx.Client(timeout=30.0, follow_redirects=True)
+    created = verify.post(
+        f"{verify_api.rstrip('/')}/vp-request",
+        json={
+            "clientId": client_id,
+            "presentationDefinition": SD_JWT_PRESENTATION_DEFINITION,
+        },
+    )
+    if created.status_code >= 400:
+        raise RuntimeError(
+            f"Verify vp-request failed HTTP {created.status_code}: {created.text[:400]}"
+        )
+    body = created.json()
+    inner = body.get("response") if isinstance(body, dict) and isinstance(body.get("response"), dict) else body
+    request_id = inner.get("requestId") or inner.get("request_id")
+    request_uri = inner.get("requestUri") or inner.get("request_uri")
+    if not request_uri and request_id:
+        request_uri = f"{mapping.get('VERIFY_ENDPOINT', 'http://verify-service:8080/v1/verify').rstrip('/')}/vp-request/{request_id}"
+    if not request_uri:
+        raise RuntimeError(f"Verify did not return a request_uri: {body}")
+    authz = _exposed_value(info, "authorization_endpoint")
+    if not authz:
+        alias = (info.get("config") or {}).get("alias") or info.get("alias") or "inji-verify-openid-1_0"
+        authz = f"{client.base_url}test/a/{alias}/authorize"
+    authorize = _suite_host_url(authz, client.base_url)
+    if not authorize.rstrip("/").endswith("/authorize"):
+        authorize = authorize.rstrip("/") + "/authorize"
+    print(f"Handing VP authorization request for {test_id}")
+    handed = client._client.get(
+        authorize,
+        params={"client_id": client_id, "request_uri": request_uri},
+        follow_redirects=False,
+    )
+    if handed.status_code >= 400:
+        print(f"Suite authorize returned HTTP {handed.status_code}: {handed.text[:300]}")
+
+
+def _suite_host_url(url: str, suite_base: str) -> str:
+    parsed = urlparse(url)
+    base = urlparse(suite_base)
+    if parsed.hostname in {None, "localhost.emobix.co.uk"} or parsed.netloc == base.netloc:
+        return url
+    return f"{base.scheme}://{base.netloc}{parsed.path}" + (f"?{parsed.query}" if parsed.query else "")
 
 
 def _mosip_payload(body: Any) -> Any:
@@ -265,11 +336,15 @@ def execute_plan(
             }
         started = client.start_module(plan_id, name, module_variant)
         test_id = started.get("id") or started.get("testId")
-        waiting = (
-            (lambda tid, waiting_info: deliver_credential_offer(client, tid, waiting_info, mapping))
-            if component == "certify"
-            else None
-        )
+        waiting = None
+        if component == "certify":
+            waiting = lambda tid, waiting_info: _safe_waiting(
+                deliver_credential_offer, client, tid, waiting_info, mapping
+            )
+        elif component == "verify":
+            waiting = lambda tid, waiting_info: _safe_waiting(
+                deliver_vp_authorization_request, client, tid, waiting_info, mapping
+            )
         info = client.wait_for_finished(test_id, timeout=module_timeout, on_waiting=waiting)
         raw_result = (
             info.get("result")
