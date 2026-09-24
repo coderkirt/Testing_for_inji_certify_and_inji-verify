@@ -6,7 +6,7 @@ on:
       component:
         description: certify, verify, or combined
         required: true
-        default: combined
+        default: certify
         type: choice
         options:
           - certify
@@ -16,14 +16,72 @@ on:
     branches: [main, master, develop]
   pull_request:
 
+permissions:
+  contents: read
+
+env:
+  CONFORMANCE_SERVER: https://localhost.emobix.co.uk:8443/
+  CERTIFY_ISSUER_URL: http://certify-nginx
+  CERTIFY_ISSUER_PUBLIC_URL: http://certify-nginx:80
+  VERIFY_ENDPOINT: http://verify-service:8080/v1/verify
+
 jobs:
+  # Tier 1: the runner's own test suite. No Docker, ~30s, runs on every PR.
+  # This is the fast signal for changes to the runner, the gate, or the configs.
+  runner-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install runner dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r runner/requirements.txt pytest
+
+      - name: Run runner test suite
+        run: python -m pytest runner/tests -q
+
+      - name: Check shell entry points
+        run: |
+          for f in scripts/*.sh; do
+            echo "bash -n $f"
+            bash -n "$f"
+          done
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "11"
+
+      # Compiles the bridge and runs its unit tests. This is the step that
+      # catches a bridge that does not compile at all, which is easy to ship
+      # unnoticed because nothing else in the pipeline touches the Java.
+      - name: Compile and unit test the api-testrig bridge
+        run: mvn -B -f testrig-bridge/pom.xml test
+
+      - name: Upload bridge test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bridge-unit-test-reports
+          path: testrig-bridge/target/surefire-reports/**
+
+  # Tier 2: the real thing. Starts the whole stack, drives the suite, maps into
+  # the TestNG/Extent bridge and gates on the benchmark.
   conformance:
+    needs: runner-tests
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 120
-    env:
-      CONFORMANCE_SERVER: https://localhost.emobix.co.uk:8443/
-      CERTIFY_ISSUER_URL: http://certify-nginx
-      VERIFY_ENDPOINT: http://verify-service:8080/v1/verify
+    strategy:
+      fail-fast: false
+      matrix:
+        component: [certify, verify]
     steps:
       - uses: actions/checkout@v4
 
@@ -42,47 +100,109 @@ jobs:
       - name: Install runner dependencies
         run: pip install -r runner/requirements.txt
 
-      - name: Start stack
-        run: |
-          cp compose/.env.example compose/.env
-          MODE="${{ github.event.inputs.component || 'combined' }}"
-          SERVICES="mongodb server nginx"
-          if [ "$MODE" = "combined" ] || [ "$MODE" = "certify" ]; then
-            SERVICES="$SERVICES certify-db certify certify-nginx"
-          fi
-          if [ "$MODE" = "combined" ] || [ "$MODE" = "verify" ]; then
-            SERVICES="$SERVICES verify-db verify-service verify-ui"
-          fi
-          docker compose --env-file compose/.env -f compose/docker-compose.yml up -d $SERVICES
+      - name: Restore benchmark baseline
+        uses: actions/cache/restore@v4
+        with:
+          path: results/baseline.json
+          key: conformance-baseline-${{ matrix.component }}-${{ github.run_id }}
+          restore-keys: |
+            conformance-baseline-${{ matrix.component }}-
 
-      - name: Wait for suite
+      - name: Run conformance
         run: |
-          for i in $(seq 1 48); do
-            if curl -kfsS "$CONFORMANCE_SERVER" >/dev/null; then
-              echo ready
-              exit 0
-            fi
-            sleep 5
-          done
-          docker compose -f compose/docker-compose.yml logs --tail=80
-          exit 1
-
-      - name: Run conformance + TestNG bridge
-        run: |
-          MODE="${{ github.event.inputs.component || 'combined' }}"
           chmod +x scripts/*.sh
-          if [ "$MODE" = "combined" ]; then
-            ./scripts/run-conformance.sh --combined --skip-compose --parallel
+          ./scripts/run-conformance.sh \
+            --component "${{ matrix.component }}" \
+            --parallel \
+            --save-baseline
+
+      - name: Save benchmark baseline
+        if: success()
+        uses: actions/cache/save@v4
+        with:
+          path: results/baseline.json
+          key: conformance-baseline-${{ matrix.component }}-${{ github.run_id }}
+
+      - name: Publish reports
+        if: always()
+        env:
+          PUSH_REPORTS_TO_S3: ${{ secrets.PUSH_REPORTS_TO_S3 }}
+          S3_HOST: ${{ secrets.S3_HOST }}
+          S3_REGION: ${{ secrets.S3_REGION }}
+          S3_USER_KEY: ${{ secrets.S3_USER_KEY }}
+          S3_USER_SECRET: ${{ secrets.S3_USER_SECRET }}
+          S3_ACCOUNT: ${{ secrets.S3_ACCOUNT }}
+        run: |
+          if [ "${PUSH_REPORTS_TO_S3}" = "true" ]; then
+            python runner/s3_upload.py --source results --run-id "${{ matrix.component }}-${{ github.run_id }}"
+            if [ -d testrig-bridge/target/extent ]; then
+              python runner/s3_upload.py --source testrig-bridge/target/extent \
+                --run-id "${{ matrix.component }}-${{ github.run_id }}"
+            fi
           else
-            ./scripts/run-conformance.sh --component "$MODE" --skip-compose
+            echo "PUSH_REPORTS_TO_S3 is not 'true' - skipping report publish"
           fi
 
       - name: Upload reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: conformance-reports
+          name: conformance-reports-${{ matrix.component }}
           path: |
             results/**
             testrig-bridge/target/surefire-reports/**
             testrig-bridge/target/extent/**
+
+      - name: Stack logs on failure
+        if: failure()
+        run: docker compose -f compose/docker-compose.yml logs --tail=120
+
+  # Manual only: the cross-module badge run.
+  combined:
+    needs: runner-tests
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.component == 'combined'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Map suite hostname
+        run: echo "127.0.0.1 localhost.emobix.co.uk" | sudo tee -a /etc/hosts
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "11"
+
+      - name: Install runner dependencies
+        run: pip install -r runner/requirements.txt
+
+      - name: Restore benchmark baseline
+        uses: actions/cache/restore@v4
+        with:
+          path: results/baseline.json
+          key: conformance-baseline-combined-${{ github.run_id }}
+          restore-keys: conformance-baseline-combined-
+
+      - name: Run combined conformance
+        run: |
+          chmod +x scripts/*.sh
+          ./scripts/run-full-stack-conformance.sh --parallel
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: conformance-reports-combined
+          path: |
+            results/**
+            testrig-bridge/target/surefire-reports/**
+            testrig-bridge/target/extent/**
+
+      - name: Stack logs on failure
+        if: failure()
+        run: docker compose -f compose/docker-compose.yml logs --tail=120
