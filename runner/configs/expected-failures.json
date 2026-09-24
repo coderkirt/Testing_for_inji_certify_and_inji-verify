@@ -1,4 +1,12 @@
 {
-  "_comment": "Map testModule (or testModule[variant=...]) to an expected non-pass. Used as skips in TestNG and as known issues for the benchmark gate.",
-  "modules": {}
+  "_comment": "Certify 0.14 credential requests use draft-13 fields (format/vct). Suite 5.31 sends OID4VCI 1.0 credential_configuration_id and Certify returns HTTP 500.",
+  "modules": {
+    "oid4vci-1_0-issuer-happy-flow": "Certify 0.14 rejects credential_configuration_id on /issuance/credential",
+    "oid4vci-1_0-issuer-happy-flow-additional-requests": "Certify 0.14 rejects credential_configuration_id on /issuance/credential",
+    "oid4vci-1_0-issuer-happy-flow-multiple-clients": "Certify 0.14 rejects credential_configuration_id on /issuance/credential",
+    "oid4vci-1_0-issuer-happy-flow-skip-notification": "Certify 0.14 rejects credential_configuration_id on /issuance/credential",
+    "oid4vci-1_0-issuer-fail-unknown-credential-configuration": "Certify 0.14 rejects credential_configuration_id on /issuance/credential",
+    "oid4vci-1_0-issuer-fail-unknown-credential-identifier": "Certify 0.14 rejects credential_configuration_id on /issuance/credential",
+    "oid4vci-1_0-issuer-fail-on-access-token-in-query": "Certify 0.14 rejects credential_configuration_id on /issuance/credential"
+  }
 }

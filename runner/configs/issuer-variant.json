@@ -5,5 +5,7 @@
   "fapi_request_method": "unsigned",
   "sender_constrain": "dpop",
   "fapi_response_mode": "plain_response",
-  "openid": "openid_connect"
+  "openid": "plain_oauth",
+  "vci_grant_type": "pre_authorization_code",
+  "vci_authorization_code_flow_variant": "issuer_initiated"
 }

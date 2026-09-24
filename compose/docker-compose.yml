@@ -97,7 +97,7 @@ services:
       SPRING_CONFIG_LOCATION: /home/mosip/config/
       enable_certify_artifactory: "false"
       download_hsm_client: "false"
-      mosip_certify_domain_url: http://certify-nginx:80
+      mosip_certify_domain_url: http://certify-nginx
     volumes:
       - ./certify/config/certify-default.properties:/home/mosip/config/certify-default.properties:ro
       - ./certify/config/certify-csvdp-farmer.properties:/home/mosip/config/certify-csvdp-farmer.properties:ro
@@ -125,6 +125,7 @@ services:
     volumes:
       - ./certify/certify-nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./certify/config/vp_request_config.json:/config/server/vp_request_config.json:ro
+      - ./certify/openid-configuration.json:/config/server/openid-configuration.json:ro
     depends_on:
       - certify
     networks:
@@ -188,7 +189,7 @@ services:
     networks:
       - conformance_net
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/v1/verify/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/v1/verify/actuator/health >/dev/null || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 20

@@ -45,6 +45,34 @@ if (-not $SkipCompose) {
     }
     Write-Host "Starting services: $($services -join ' ')"
     Invoke-Compose -ComposeArgs (@("up", "-d") + $services)
+    if ($Mode -in @("combined", "certify")) {
+        Write-Host "Waiting for Certify to become healthy"
+        $healthy = $false
+        for ($i = 0; $i -lt 24; $i++) {
+            $health = docker inspect -f "{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}" inji-openid-conformance-certify-1 2>$null
+            if ($health -eq "healthy") { $healthy = $true; break }
+            if ($health -eq "exited") { break }
+            Start-Sleep -Seconds 5
+        }
+        if (-not $healthy) {
+            Write-Host "Certify is not healthy. Check: docker logs inji-openid-conformance-certify-1"
+            exit 1
+        }
+    }
+    if ($Mode -in @("combined", "verify")) {
+        Write-Host "Waiting for Inji Verify to become healthy"
+        $healthy = $false
+        for ($i = 0; $i -lt 24; $i++) {
+            $health = docker inspect -f "{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}" inji-openid-conformance-verify-service-1 2>$null
+            if ($health -eq "healthy") { $healthy = $true; break }
+            if ($health -eq "exited") { break }
+            Start-Sleep -Seconds 5
+        }
+        if (-not $healthy) {
+            Write-Host "Inji Verify is not healthy. Check: docker logs inji-openid-conformance-verify-service-1"
+            exit 1
+        }
+    }
 }
 
 if (-not $env:CONFORMANCE_SERVER) { $env:CONFORMANCE_SERVER = "https://localhost.emobix.co.uk:8443/" }

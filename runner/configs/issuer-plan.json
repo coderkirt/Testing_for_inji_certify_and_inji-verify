@@ -7,12 +7,18 @@
   },
   "vci": {
     "credential_issuer_url": "${CERTIFY_ISSUER_URL}",
-    "credential_configuration_id": "${CERTIFY_CREDENTIAL_CONFIGURATION_ID}"
+    "credential_configuration_id": "${CERTIFY_CREDENTIAL_CONFIGURATION_ID}",
+    "static_tx_code": "1234"
+  },
+  "resource": {
+    "resourceUrl": "${CERTIFY_ISSUER_URL}/v1/certify/issuance/credential"
   },
   "client": {
-    "client_id": "inji-certify-conformance"
+    "client_id": "inji-certify-conformance",
+    "scope": "mock_identity_vc_ldp"
   },
   "client2": {
-    "client_id": "inji-certify-conformance-2"
+    "client_id": "inji-certify-conformance-2",
+    "scope": "mock_identity_vc_ldp"
   }
 }

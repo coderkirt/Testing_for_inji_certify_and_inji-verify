@@ -2,6 +2,7 @@ package io.mosip.testrig.apirig.openid;
 
 import java.nio.file.Path;
 
+import org.testng.IConfigurationListener;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
@@ -15,7 +16,7 @@ import com.aventstack.extentreports.reporter.ExtentSparkReporter;
  * Writes an Extent Spark report next to TestNG output so results can land in
  * the same automationtests bucket the api-testrig already publishes.
  */
-public class ExtentReportListener implements ITestListener {
+public class ExtentReportListener implements ITestListener, IConfigurationListener {
     private ExtentReports extent;
     private final ThreadLocal<ExtentTest> current = new ThreadLocal<>();
 

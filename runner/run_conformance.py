@@ -19,6 +19,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
+from urllib.parse import parse_qs, unquote, urlparse
+
+import httpx
 
 ROOT = Path(__file__).resolve().parent
 if str(ROOT) not in sys.path:
@@ -127,6 +130,100 @@ def run_official_script(
     return subprocess.call(cmd, cwd=str(official.parent))
 
 
+FARMER_CLAIMS = {
+    "id": "F001",
+    "fullName": "Ada Farmer",
+    "mobileNumber": "9999999999",
+    "dateOfBirth": "1990-01-01",
+    "gender": "Female",
+    "farmerID": "FAR-001",
+}
+
+
+def _exposed_value(info: dict[str, Any], key: str) -> Optional[str]:
+    exposed = info.get("exposed") or info.get("exposedValues") or {}
+    if isinstance(exposed, dict):
+        value = exposed.get(key)
+        if isinstance(value, str):
+            return value
+    return None
+
+
+def deliver_credential_offer(client: OidfClient, test_id: str, info: dict[str, Any], mapping: dict[str, str]) -> None:
+    offer_url = _exposed_value(info, "credential_offer_endpoint")
+    if not offer_url:
+        alias = (info.get("config") or {}).get("alias") or "inji-certify-openid-1_0"
+        offer_url = f"{client.base_url}test/a/{alias}/credential_offer"
+    certify_api = os.environ.get("CERTIFY_API_URL", "http://localhost:8090/v1/certify")
+    payload = {
+        "credential_configuration_id": mapping.get("CERTIFY_CREDENTIAL_CONFIGURATION_ID", "FarmerCredential"),
+        "claims": FARMER_CLAIMS,
+        "expires_in": 600,
+        "tx_code": "1234",
+    }
+    certify = httpx.Client(timeout=30.0, follow_redirects=True)
+    created = certify.post(
+        f"{certify_api.rstrip('/')}/pre-authorized-data",
+        json=payload,
+    )
+    if created.status_code >= 400:
+        raise RuntimeError(
+            f"Certify pre-authorized-data failed HTTP {created.status_code}: {created.text[:400]}"
+        )
+    inner = _mosip_payload(created.json())
+    if not isinstance(inner, dict):
+        raise RuntimeError(f"Unexpected Certify pre-authorized-data payload: {inner}")
+    offer_uri = inner.get("credentialOfferUri") or inner.get("credential_offer_uri")
+    if not offer_uri:
+        raise RuntimeError(f"Certify did not return a credential offer URI: {body}")
+    offer_json = _load_credential_offer(certify, offer_uri, certify_api)
+    print(f"Delivering credential offer for {test_id}")
+    # Suite 5.31 rejects http:// offer URIs; send the offer by value instead.
+    client._client.get(offer_url, params={"credential_offer": json.dumps(offer_json)})
+
+
+def _mosip_payload(body: Any) -> Any:
+    if isinstance(body, dict) and body.get("errors"):
+        raise RuntimeError(f"Certify error: {body}")
+    if isinstance(body, dict) and isinstance(body.get("response"), (dict, list)):
+        return body["response"]
+    return body
+
+
+def _host_reachable_url(url: str, certify_api: str) -> str:
+    parsed = urlparse(url)
+    if parsed.hostname in {None, "certify-nginx", "certify"}:
+        api = urlparse(certify_api)
+        host_root = f"{api.scheme}://{api.hostname}"
+        if api.port:
+            host_root += f":{api.port}"
+        return host_root + (parsed.path or "") + (f"?{parsed.query}" if parsed.query else "")
+    return url
+
+
+def _load_credential_offer(http: httpx.Client, offer_uri: str, certify_api: str) -> dict[str, Any]:
+    parsed = urlparse(offer_uri)
+    query = parse_qs(parsed.query)
+    if query.get("credential_offer"):
+        return json.loads(unquote(query["credential_offer"][0]))
+    fetch_url = None
+    if query.get("credential_offer_uri"):
+        fetch_url = query["credential_offer_uri"][0]
+    elif parsed.scheme in {"http", "https"}:
+        fetch_url = offer_uri
+    if not fetch_url:
+        raise RuntimeError(f"Cannot parse Certify credential offer URI: {offer_uri}")
+    fetched = http.get(_host_reachable_url(fetch_url, certify_api))
+    if fetched.status_code >= 400:
+        raise RuntimeError(
+            f"Failed to fetch credential offer HTTP {fetched.status_code}: {fetched.text[:400]}"
+        )
+    payload = _mosip_payload(fetched.json())
+    if not isinstance(payload, dict):
+        raise RuntimeError(f"Unexpected credential offer payload: {payload}")
+    return payload
+
+
 def execute_plan(
     client: OidfClient,
     component: str,
@@ -168,7 +265,12 @@ def execute_plan(
             }
         started = client.start_module(plan_id, name, module_variant)
         test_id = started.get("id") or started.get("testId")
-        info = client.wait_for_finished(test_id, timeout=module_timeout)
+        waiting = (
+            (lambda tid, waiting_info: deliver_credential_offer(client, tid, waiting_info, mapping))
+            if component == "certify"
+            else None
+        )
+        info = client.wait_for_finished(test_id, timeout=module_timeout, on_waiting=waiting)
         raw_result = (
             info.get("result")
             or info.get("testResult")

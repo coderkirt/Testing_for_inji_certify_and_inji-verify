@@ -103,14 +103,24 @@ class OidfClient:
     def get_info(self, test_id: str) -> dict:
         return self._request("GET", f"api/info/{test_id}").json()
 
-    def wait_for_finished(self, test_id: str, timeout: int = 600, poll: float = 3.0) -> dict:
+    def wait_for_finished(
+        self,
+        test_id: str,
+        timeout: int = 600,
+        poll: float = 3.0,
+        on_waiting=None,
+    ) -> dict:
         deadline = time.time() + timeout
         last: dict = {}
+        offered = False
         while time.time() < deadline:
             last = self.get_info(test_id)
             status = (last.get("status") or last.get("state") or "").upper()
             if status in {"FINISHED", "INTERRUPTED"}:
                 return last
+            if status == "WAITING" and on_waiting and not offered:
+                on_waiting(test_id, last)
+                offered = True
             time.sleep(poll)
         raise ConformanceError(f"Timed out waiting for test {test_id}; last={last}")
 

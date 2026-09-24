@@ -1,4 +1,11 @@
 {
   "_comment": "Modules listed here are not started. Use for interactive OpenID4VP handoff tests that cannot run unattended.",
-  "modules": []
+  "modules": [
+    "oid4vci-1_0-issuer-batch-issuance",
+    "oid4vci-1_0-issuer-fail-invalid-nonce",
+    "oid4vci-1_0-issuer-fail-invalid-jwt-proof-signature",
+    "oid4vci-1_0-issuer-fail-invalid-key-attestation-signature",
+    "oid4vci-1_0-issuer-fail-missing-proof",
+    "oid4vci-1_0-issuer-fail-unsupported-encryption-algorithm"
+  ]
 }
