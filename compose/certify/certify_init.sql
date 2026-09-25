@@ -1,5 +1,6 @@
--- Schema excerpt from inji-certify release-0.14.x docker-compose-injistack.
+-- Schema excerpt from inji-certify v1.0.0-alpha.1 docker-compose-injistack.
 -- Locale clauses omitted so the init script works on stock postgres:15 images.
+-- FarmerCredential stays dc+sd-jwt so the OID4VCI 1.0 issuer plan can request it.
 
 CREATE DATABASE inji_certify
     ENCODING = 'UTF8'
@@ -118,7 +119,7 @@ CREATE TABLE IF NOT EXISTS certify.credential_config (
     cryptographic_binding_methods_supported TEXT[] NOT NULL,
     credential_signing_alg_values_supported TEXT[] NOT NULL,
     proof_types_supported JSONB NOT NULL,
-    credential_subject JSONB,
+    claims JSONB,
     sd_jwt_claims JSONB,
     mso_mdoc_claims JSONB,
     plugin_configurations JSONB,
@@ -130,12 +131,25 @@ CREATE TABLE IF NOT EXISTS certify.credential_config (
     CONSTRAINT pk_config_id PRIMARY KEY (config_id)
 );
 
+CREATE UNIQUE INDEX idx_credential_config_type_context_unique
+ON certify.credential_config(credential_type, context, credential_format)
+WHERE credential_type IS NOT NULL AND credential_type <> ''
+AND context IS NOT NULL AND context <> '';
+
+CREATE UNIQUE INDEX idx_credential_config_sd_jwt_vct_unique
+ON certify.credential_config(sd_jwt_vct, credential_format)
+WHERE sd_jwt_vct IS NOT NULL AND sd_jwt_vct <> '';
+
+CREATE UNIQUE INDEX idx_credential_config_doctype_unique
+ON certify.credential_config(doctype, credential_format)
+WHERE doctype IS NOT NULL AND doctype <> '';
+
 INSERT INTO certify.credential_config (
     credential_config_key_id, config_id, status, vc_template, doctype, sd_jwt_vct,
     context, credential_type, credential_format, did_url, key_manager_app_id,
     key_manager_ref_id, signature_algo, signature_crypto_suite, sd_claim, display,
     display_order, scope, cryptographic_binding_methods_supported,
-    credential_signing_alg_values_supported, proof_types_supported, credential_subject,
+    credential_signing_alg_values_supported, proof_types_supported, claims,
     mso_mdoc_claims, plugin_configurations, credential_status_purpose, qr_settings,
     qr_signature_algo, cr_dtimes, upd_dtimes
 ) VALUES (
@@ -147,7 +161,7 @@ INSERT INTO certify.credential_config (
     'FarmerCredential',
     'https://www.w3.org/2018/credentials/v1',
     'FarmerCredential,VerifiableCredential',
-    'vc+sd-jwt',
+    'dc+sd-jwt',
     'did:web:certify-nginx',
     'CERTIFY_VC_SIGN_ED25519',
     'ED25519_SIGN',
@@ -259,4 +273,40 @@ CREATE TABLE IF NOT EXISTS certify.iar_session (
     code_used_at TIMESTAMP,
     cr_dtimes TIMESTAMP NOT NULL DEFAULT NOW(),
     identity_data TEXT
+);
+
+CREATE TABLE IF NOT EXISTS certify.authorization_request_details (
+    request_id character varying(40) NOT NULL,
+    transaction_id character varying(40) NOT NULL,
+    authorization_details text NOT NULL,
+    expires_at bigint NOT NULL,
+    CONSTRAINT pk_authorization_request_details PRIMARY KEY (request_id)
+);
+
+CREATE TABLE IF NOT EXISTS certify.presentation_definition (
+    id character varying(36) NOT NULL,
+    input_descriptors text NOT NULL,
+    name character varying(500),
+    purpose character varying(500),
+    vp_format text,
+    submission_requirements text,
+    CONSTRAINT pk_presentation_definition PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS certify.vc_submission (
+    transaction_id character varying(40) NOT NULL,
+    vc text NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS certify.vp_submission (
+    request_id character varying(40) NOT NULL,
+    vp_token VARCHAR NULL,
+    presentation_submission text NULL,
+    error character varying(100) NULL,
+    error_description character varying(200) NULL,
+    response_code character varying(200) NULL,
+    response_code_expiry_at TIMESTAMP WITH TIME ZONE NULL,
+    response_code_used boolean DEFAULT false,
+    CONSTRAINT pk_vp_submission PRIMARY KEY (request_id),
+    CONSTRAINT uq_vp_submission_response_code UNIQUE (response_code)
 );

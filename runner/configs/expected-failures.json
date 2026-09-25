@@ -1,13 +1,6 @@
 {
-  "_comment": "Certify 0.14 credential requests use draft-13 fields (format/vct). Suite 5.31 sends OID4VCI 1.0 credential_configuration_id and Certify returns HTTP 500.",
+  "_comment": "Known product gaps become TestNG skips. Certify 1.0.0-alpha.1 accepts credential_configuration_id; do not list those issuer modules here. Verify 0.18.2 is still OpenID4VP draft 21, not HAIP 1.0 Final.",
   "modules": {
-    "oid4vci-1_0-issuer-happy-flow": "Certify 0.14 rejects credential_configuration_id on /issuance/credential",
-    "oid4vci-1_0-issuer-happy-flow-additional-requests": "Certify 0.14 rejects credential_configuration_id on /issuance/credential",
-    "oid4vci-1_0-issuer-happy-flow-multiple-clients": "Certify 0.14 rejects credential_configuration_id on /issuance/credential",
-    "oid4vci-1_0-issuer-happy-flow-skip-notification": "Certify 0.14 rejects credential_configuration_id on /issuance/credential",
-    "oid4vci-1_0-issuer-fail-unknown-credential-configuration": "Certify 0.14 rejects credential_configuration_id on /issuance/credential",
-    "oid4vci-1_0-issuer-fail-unknown-credential-identifier": "Certify 0.14 rejects credential_configuration_id on /issuance/credential",
-    "oid4vci-1_0-issuer-fail-on-access-token-in-query": "Certify 0.14 rejects credential_configuration_id on /issuance/credential",
     "oid4vp-1final-verifier-happy-flow": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)",
     "oid4vp-1final-verifier-minimal-cnf-jwk": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)",
     "oid4vp-1final-verifier-request-uri-method-post": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)",

@@ -135,7 +135,7 @@ class OidfClient:
         try:
             response = self._client.get(
                 f"api/plan/exporthtml/{plan_id}",
-                headers={"Accept": "application/zip, */*"},
+                headers={"Accept": "application/zip, application/octet-stream, */*"},
             )
             if response.status_code != 200:
                 print(f"HTML export skipped: HTTP {response.status_code}")

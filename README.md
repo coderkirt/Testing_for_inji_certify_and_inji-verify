@@ -69,9 +69,9 @@ export VERIFY_ENDPOINT=https://verify.example.org/v1/verify
 
 ## Expected failures and diffs
 
-- Edit `runner/configs/expected-failures.json` for known product gaps (they become TestNG skips, not silent greens).
-- Edit `runner/configs/expected-skips.json` for interactive OpenID4VP modules.
-- `runner/configs/benchmark.json` fails the build if unexpected failures remain.
+- Edit `runner/configs/expected-failures.json` for known product gaps (they become TestNG skips, not silent greens). Do not list Certify 1.0 issuer modules there.
+- Edit `runner/configs/expected-skips.json` for modules that cannot run unattended.
+- `runner/configs/benchmark.json` fails the build if the pass rate is below 50% or required issuer modules are missing.
 - Compare runs: `python runner/result_diff.py --previous results/previous.json --current results/combined/results.json`
 
 ## Parallel execution

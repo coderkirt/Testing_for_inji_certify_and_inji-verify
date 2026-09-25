@@ -226,7 +226,7 @@ def deliver_credential_offer(client: OidfClient, test_id: str, info: dict[str, A
         raise RuntimeError(f"Unexpected Certify pre-authorized-data payload: {inner}")
     offer_uri = inner.get("credentialOfferUri") or inner.get("credential_offer_uri")
     if not offer_uri:
-        raise RuntimeError(f"Certify did not return a credential offer URI: {body}")
+        raise RuntimeError(f"Certify did not return a credential offer URI: {inner}")
     offer_json = _load_credential_offer(certify, offer_uri, certify_api)
     print(f"Delivering credential offer for {test_id}")
     # Suite 5.31 rejects http:// offer URIs; send the offer by value instead.

@@ -86,7 +86,7 @@ services:
       retries: 15
 
   certify:
-    image: ${CERTIFY_IMAGE:-injistack/inji-certify-with-plugins:0.14.0}
+    image: ${CERTIFY_IMAGE:-injistack/inji-certify-with-plugins:1.0.0-alpha.1}
     user: root
     ports:
       - "${CERTIFY_HOST_PORT:-8090}:8090"

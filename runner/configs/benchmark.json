@@ -1,6 +1,14 @@
 {
-  "minPassRate": 0.0,
+  "minPassRate": 0.5,
   "failOnUnexpectedFailure": true,
   "failOnUnexpectedSkip": false,
-  "requiredModules": []
+  "requiredModules": [
+    "oid4vci-1_0-issuer-happy-flow",
+    "oid4vci-1_0-issuer-happy-flow-additional-requests",
+    "oid4vci-1_0-issuer-happy-flow-multiple-clients",
+    "oid4vci-1_0-issuer-happy-flow-skip-notification",
+    "oid4vci-1_0-issuer-fail-unknown-credential-configuration",
+    "oid4vci-1_0-issuer-fail-unknown-credential-identifier",
+    "oid4vci-1_0-issuer-fail-on-access-token-in-query"
+  ]
 }

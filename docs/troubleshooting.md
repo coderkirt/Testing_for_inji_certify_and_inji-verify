@@ -19,11 +19,17 @@
 
 ## Postgres init failed
 
-- First boot only runs `certify_init.sql` / `verify/init.sql`. Recreate volumes: `docker compose -f compose/docker-compose.yml down -v`
+- First boot only runs `certify_init.sql` / `verify/init.sql`. Recreate volumes: `docker compose --env-file compose/.env -f compose/docker-compose.yml down -v`
+- After changing `CERTIFY_IMAGE` (for example 0.14.0 to 1.0.0-alpha.1), recreate the `certify-pg` volume the same way. The 0.14 schema does not start 1.0.
 
 ## TestNG finds no modules
 
 - `results/<mode>/results.json` is missing or the official script path was used without a mapper. Re-run without `--official-script`, or inspect the official export zip.
+
+## All modules skipped but BUILD SUCCESS
+
+- `expected-failures.json` remaps suite `FAILED` to TestNG skips. Certify issuer modules must not be listed there once the image is 1.0.
+- `benchmark.json` `minPassRate` of `0.0` lets a zero-pass run stay green. The committed gate requires the seven unattended issuer modules.
 
 ## Result diff
 
