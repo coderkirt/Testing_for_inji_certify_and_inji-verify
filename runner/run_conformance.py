@@ -29,7 +29,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from config_render import endpoint_mapping, load_json, render_plan_config
-from oidf_client import OidfClient
+from oidf_client import ConformanceError, OidfClient
 from result_diff import diff_results
 
 CONFIG_DIR = ROOT / "configs"
@@ -39,14 +39,18 @@ CONFIG_DIR = ROOT / "configs"
 HANDOFF_RETRIES = 4
 
 
-def _retryable_transport(retries: int = 3, backoff: float = 2.0) -> Optional[httpx.HTTPTransport]:
+def _retryable_transport(retries: int = 3, verify: bool = False) -> Optional[httpx.HTTPTransport]:
     """Transport with automatic retries on connection errors (not HTTP 4xx/5xx).
 
-    Returns None when the Python/httpx build does not support the `transport`
-    argument, so callers can fall back to the default transport.
+    SSL verification is configured on the transport itself because an explicit
+    `transport=` makes httpx ignore the client-level `verify=` flag — without
+    this, the self-signed suite certificate fails every request in CI.
+
+    Returns None when the Python/httpx build does not support the arguments,
+    so callers can fall back to the default transport.
     """
     try:
-        return httpx.HTTPTransport(retries=retries)
+        return httpx.HTTPTransport(retries=retries, verify=verify)
     except TypeError:
         return None
 
