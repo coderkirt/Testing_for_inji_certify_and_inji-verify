@@ -49,6 +49,14 @@ Copy `compose/.env.example` to `compose/.env` before the first run.
 - [Troubleshooting](docs/troubleshooting.md)
 - [api-testrig drop-in](testrig-bridge/README.md)
 
+## MOSIP Decode 2026 submission deliverables
+
+- [Pitch deck (17 slides, pptx)](docs/pitch/MOSIP_Decode_2026_Pitch.pptx) — problem, solution, technology stack, target audience, impact
+- [Pitch deck content + speaker notes](docs/pitch/MOSIP_Decode_2026_PPT_Content.md)
+- [Full submission document (PDF)](docs/MOSIP_Decode_2026_Submission.pdf) — architecture, test data, test cases & results, installation guide, submission checklist
+
+Team FSD — Kirt Raj Dixit · Aditya Upadhyay — Pranveer Singh Institute of Technology, Kanpur
+
 ## Point at an existing env
 
 Same contract as api-testrig:
