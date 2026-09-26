@@ -133,7 +133,10 @@ class OidfClient:
     def export_html(self, plan_id: str, output_dir: Path) -> Optional[Path]:
         output_dir.mkdir(parents=True, exist_ok=True)
         try:
-            response = self._client.get(f"api/plan/exporthtml/{plan_id}")
+            response = self._client.get(
+                f"api/plan/exporthtml/{plan_id}",
+                headers={"Accept": "application/zip, */*"},
+            )
             if response.status_code != 200:
                 print(f"HTML export skipped: HTTP {response.status_code}")
                 return None

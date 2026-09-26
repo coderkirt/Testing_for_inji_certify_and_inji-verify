@@ -230,7 +230,11 @@ def deliver_credential_offer(client: OidfClient, test_id: str, info: dict[str, A
     offer_json = _load_credential_offer(certify, offer_uri, certify_api)
     print(f"Delivering credential offer for {test_id}")
     # Suite 5.31 rejects http:// offer URIs; send the offer by value instead.
-    client._client.get(offer_url, params={"credential_offer": json.dumps(offer_json)})
+    delivered = client._client.get(offer_url, params={"credential_offer": json.dumps(offer_json)})
+    if delivered.status_code >= 400:
+        raise RuntimeError(
+            f"Suite rejected credential offer: HTTP {delivered.status_code}: {delivered.text[:300]}"
+        )
 
 
 def deliver_vp_authorization_request(
@@ -273,7 +277,9 @@ def deliver_vp_authorization_request(
         follow_redirects=False,
     )
     if handed.status_code >= 400:
-        print(f"Suite authorize returned HTTP {handed.status_code}: {handed.text[:300]}")
+        raise RuntimeError(
+            f"Suite authorize returned HTTP {handed.status_code}: {handed.text[:300]}"
+        )
 
 
 def _suite_host_url(url: str, suite_base: str) -> str:
@@ -380,7 +386,10 @@ def execute_plan(
             info = client.wait_for_finished(test_id, timeout=module_timeout, on_waiting=waiting)
         except ConformanceError as exc:
             # One stuck module must not destroy the whole evidence run: record
-            # it and let the benchmark gate decide the exit code.
+            # it and let the benchmark gate decide the exit code. Modules with
+            # documented gaps (expected-failures.json) keep their expected
+            # status instead of surfacing as unexpected failures.
+            expected = key in expected_failures or name in expected_failures
             print(f"Module {name} did not finish in {module_timeout}s: {exc}")
             return {
                 "testModule": name,
@@ -388,10 +397,13 @@ def execute_plan(
                 "testId": test_id,
                 "status": "TIMEOUT",
                 "result": "TIMEOUT",
-                "mapped": "FAIL",
-                "expectedFailure": False,
+                "mapped": map_result("FAILED", expected, False),
+                "expectedFailure": expected,
                 "expectedSkip": False,
-                "reason": f"module did not reach FINISHED within {module_timeout}s (handoff retries exhausted or suite stalled)",
+                "reason": (
+                    expected_failures.get(key) or expected_failures.get(name)
+                    or f"module did not reach FINISHED within {module_timeout}s"
+                ),
             }
         raw_result = (
             info.get("result")
