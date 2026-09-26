@@ -28,6 +28,7 @@ class OidfClient:
         token: Optional[str] = None,
         verify_ssl: bool = False,
         timeout: float = 30.0,
+        transport: Optional[httpx.HTTPTransport] = None,
     ) -> None:
         if not base_url.endswith("/"):
             base_url += "/"
@@ -35,13 +36,18 @@ class OidfClient:
         headers = {"Accept": "application/json"}
         if token:
             headers["Authorization"] = f"Bearer {token}"
-        self._client = httpx.Client(
-            base_url=base_url,
-            headers=headers,
-            verify=verify_ssl,
-            timeout=timeout,
-            follow_redirects=True,
-        )
+        client_kwargs: dict[str, Any] = {
+            "base_url": base_url,
+            "headers": headers,
+            "verify": verify_ssl,
+            # Connect failures must surface quickly so callers can retry;
+            # reads may legitimately stream slowly from the suite.
+            "timeout": httpx.Timeout(30.0, connect=10.0),
+            "follow_redirects": True,
+        }
+        if transport is not None:
+            client_kwargs["transport"] = transport
+        self._client = httpx.Client(**client_kwargs)
 
     def close(self) -> None:
         self._client.close()

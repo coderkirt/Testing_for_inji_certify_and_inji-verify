@@ -22,6 +22,7 @@ from typing import Any, Optional
 from urllib.parse import parse_qs, unquote, urlparse
 
 import httpx
+from httpx import HTTPError as HttpxError
 
 ROOT = Path(__file__).resolve().parent
 if str(ROOT) not in sys.path:
@@ -32,6 +33,23 @@ from oidf_client import OidfClient
 from result_diff import diff_results
 
 CONFIG_DIR = ROOT / "configs"
+
+# Retries for WAITING handoffs and suite API calls. CI runners are slow to
+# boot containers; connection resets right after `docker compose up` are normal.
+HANDOFF_RETRIES = 4
+
+
+def _retryable_transport(retries: int = 3, backoff: float = 2.0) -> Optional[httpx.HTTPTransport]:
+    """Transport with automatic retries on connection errors (not HTTP 4xx/5xx).
+
+    Returns None when the Python/httpx build does not support the `transport`
+    argument, so callers can fall back to the default transport.
+    """
+    try:
+        return httpx.HTTPTransport(retries=retries)
+    except TypeError:
+        return None
+
 
 PASS_RESULTS = {"PASSED", "PASSED_WITH_WARNINGS", "WARNING", "REVIEW"}
 FAIL_RESULTS = {"FAILED", "FAILURE", "INTERRUPTED"}
@@ -154,10 +172,19 @@ SD_JWT_PRESENTATION_DEFINITION = {
 
 
 def _safe_waiting(fn, client: OidfClient, test_id: str, info: dict[str, Any], mapping: dict[str, str]) -> None:
-    try:
-        fn(client, test_id, info, mapping)
-    except Exception as exc:  # noqa: BLE001
-        print(f"WAITING handoff failed for {test_id}: {exc}")
+    last_exc: Optional[Exception] = None
+    for attempt in range(1, HANDOFF_RETRIES + 1):
+        try:
+            fn(client, test_id, info, mapping)
+            return
+        except Exception as exc:  # noqa: BLE001
+            last_exc = exc
+            # Connection resets right after stack boot are common on slow CI
+            # machines; back off and try again before giving up.
+            wait = min(30.0, 2.0 * attempt)
+            print(f"WAITING handoff attempt {attempt}/{HANDOFF_RETRIES} failed for {test_id}: {exc} (retrying in {wait:.0f}s)")
+            time.sleep(wait)
+    print(f"WAITING handoff failed for {test_id}: {last_exc}")
 
 
 def _exposed_value(info: dict[str, Any], key: str) -> Optional[str]:
@@ -345,7 +372,23 @@ def execute_plan(
             waiting = lambda tid, waiting_info: _safe_waiting(
                 deliver_vp_authorization_request, client, tid, waiting_info, mapping
             )
-        info = client.wait_for_finished(test_id, timeout=module_timeout, on_waiting=waiting)
+        try:
+            info = client.wait_for_finished(test_id, timeout=module_timeout, on_waiting=waiting)
+        except ConformanceError as exc:
+            # One stuck module must not destroy the whole evidence run: record
+            # it and let the benchmark gate decide the exit code.
+            print(f"Module {name} did not finish in {module_timeout}s: {exc}")
+            return {
+                "testModule": name,
+                "variant": module_variant,
+                "testId": test_id,
+                "status": "TIMEOUT",
+                "result": "TIMEOUT",
+                "mapped": "FAIL",
+                "expectedFailure": False,
+                "expectedSkip": False,
+                "reason": f"module did not reach FINISHED within {module_timeout}s (handoff retries exhausted or suite stalled)",
+            }
         raw_result = (
             info.get("result")
             or info.get("testResult")
@@ -490,29 +533,29 @@ def main() -> int:
         (args.output_dir / "results.json").write_text(json.dumps(document, indent=2) + "\n", encoding="utf-8")
         return 0 if document["benchmarkMet"] else 1
 
-    with OidfClient(args.suite_url, token=args.token, verify_ssl=False) as client:
-        if not args.skip_wait:
-            client.wait_until_ready()
+    client = OidfClient(args.suite_url, token=args.token, verify_ssl=False, transport=_retryable_transport())
+    if not args.skip_wait:
+        client.wait_until_ready()
 
-        def run_component(component: str) -> dict[str, Any]:
-            return execute_plan(
-                client,
-                component,
-                plans_meta[component],
-                mapping,
-                expected_failures,
-                expected_skips,
-                args.output_dir,
-                args.module_timeout,
-                args.parallel,
-            )
+    def run_component(component: str) -> dict[str, Any]:
+        return execute_plan(
+            client,
+            component,
+            plans_meta[component],
+            mapping,
+            expected_failures,
+            expected_skips,
+            args.output_dir,
+            args.module_timeout,
+            args.parallel,
+        )
 
-        if args.parallel and len(components) > 1:
-            with ThreadPoolExecutor(max_workers=2) as pool:
-                futures = [pool.submit(run_component, component) for component in components]
-                plans = [future.result() for future in futures]
-        else:
-            plans = [run_component(component) for component in components]
+    if args.parallel and len(components) > 1:
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            futures = [pool.submit(run_component, component) for component in components]
+            plans = [future.result() for future in futures]
+    else:
+        plans = [run_component(component) for component in components]
 
     summary = summarize(plans)
     met, reasons = evaluate_benchmark(summary, benchmark)
