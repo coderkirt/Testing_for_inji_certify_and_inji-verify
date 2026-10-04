@@ -19,6 +19,7 @@ testrig-bridge/target/
 # Runtime artifacts
 results/
 tmp/
+.tmp-certify-patch/
 mongo/data/
 compose/certify/data/
 compose/vendor/
