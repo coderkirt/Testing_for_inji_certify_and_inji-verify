@@ -10,7 +10,9 @@ param(
     [string]$DiffAgainst
 )
 
+$previousErrorActionPreference = $ErrorActionPreference
 $ErrorActionPreference = "Stop"
+try {
 $Root = Split-Path -Parent $PSScriptRoot
 $ComposeFile = Join-Path $Root "compose\docker-compose.yml"
 $EnvFile = Join-Path $Root "compose\.env"
@@ -48,7 +50,7 @@ if (-not $SkipCompose) {
     if ($Mode -in @("combined", "certify")) {
         Write-Host "Waiting for Certify to become healthy"
         $healthy = $false
-        for ($i = 0; $i -lt 24; $i++) {
+        for ($i = 0; $i -lt 48; $i++) {
             $health = docker inspect -f "{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}" inji-openid-conformance-certify-1 2>$null
             if ($health -eq "healthy") { $healthy = $true; break }
             if ($health -eq "exited") { break }
@@ -77,7 +79,7 @@ if (-not $SkipCompose) {
 
 if (-not $env:CONFORMANCE_SERVER) { $env:CONFORMANCE_SERVER = "https://localhost.emobix.co.uk:8443/" }
 if ($env:ENV_ENDPOINT -and -not $env:CERTIFY_ISSUER_URL) { $env:CERTIFY_ISSUER_URL = $env:ENV_ENDPOINT }
-if (-not $env:CERTIFY_ISSUER_URL) { $env:CERTIFY_ISSUER_URL = "http://certify-nginx" }
+if (-not $env:CERTIFY_ISSUER_URL) { $env:CERTIFY_ISSUER_URL = "https://certify-nginx" }
 if (-not $env:VERIFY_ENDPOINT) { $env:VERIFY_ENDPOINT = "http://verify-service:8080/v1/verify" }
 
 $OutDir = Join-Path $Root "results\$Mode"
@@ -113,3 +115,6 @@ if (-not $SkipTestrig) {
 }
 
 exit $RunnerExit
+} finally {
+    $ErrorActionPreference = $previousErrorActionPreference
+}

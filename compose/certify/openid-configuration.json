@@ -1,9 +1,9 @@
 {
-  "issuer": "http://certify-nginx",
-  "authorization_endpoint": "http://certify-nginx/v1/certify/oauth/iar",
-  "token_endpoint": "http://certify-nginx/v1/certify/oauth/token",
-  "jwks_uri": "http://certify-nginx/v1/certify/.well-known/jwks.json",
-  "nonce_endpoint": "http://certify-nginx/v1/certify/nonce",
+  "issuer": "https://certify-nginx",
+  "authorization_endpoint": "https://certify-nginx/v1/certify/oauth/iar",
+  "token_endpoint": "https://certify-nginx/v1/certify/oauth/token",
+  "jwks_uri": "https://certify-nginx/v1/certify/.well-known/jwks.json",
+  "nonce_endpoint": "https://certify-nginx/v1/certify/nonce",
   "grant_types_supported": [
     "authorization_code",
     "urn:ietf:params:oauth:grant-type:pre-authorized_code"
@@ -14,5 +14,5 @@
     "private_key_jwt",
     "none"
   ],
-  "interactive_authorization_endpoint": "http://certify-nginx/v1/certify/oauth/iar"
+  "interactive_authorization_endpoint": "https://certify-nginx/v1/certify/oauth/iar"
 }

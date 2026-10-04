@@ -1,11 +1,12 @@
 {
-  "_comment": "Modules listed here are not started. Keep issuer batch / proof / encryption cases here until Certify can complete them unattended. Use the same list for interactive OpenID4VP handoff tests.",
+  "_comment": "Modules listed here are not started. Keep issuer batch / proof / encryption cases here until Certify can complete them unattended. Signed issuer metadata is not published by Certify 1.0.0-alpha.1. Use the same list for interactive OpenID4VP handoff tests.",
   "modules": [
     "oid4vci-1_0-issuer-batch-issuance",
     "oid4vci-1_0-issuer-fail-invalid-nonce",
     "oid4vci-1_0-issuer-fail-invalid-jwt-proof-signature",
     "oid4vci-1_0-issuer-fail-invalid-key-attestation-signature",
     "oid4vci-1_0-issuer-fail-missing-proof",
-    "oid4vci-1_0-issuer-fail-unsupported-encryption-algorithm"
+    "oid4vci-1_0-issuer-fail-unsupported-encryption-algorithm",
+    "oid4vci-1_0-issuer-metadata-test-signed"
   ]
 }

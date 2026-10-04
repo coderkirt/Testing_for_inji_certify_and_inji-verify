@@ -1,6 +1,6 @@
 {
   "client_auth_type": "private_key_jwt",
-  "fapi_profile": "plain_fapi",
+  "fapi_profile": "vci",
   "credential_format": "sd_jwt_vc",
   "fapi_request_method": "unsigned",
   "sender_constrain": "dpop",

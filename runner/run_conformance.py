@@ -152,14 +152,8 @@ def run_official_script(
     return subprocess.call(cmd, cwd=str(official.parent))
 
 
-FARMER_CLAIMS = {
-    "id": "F001",
-    "fullName": "Ada Farmer",
-    "mobileNumber": "9999999999",
-    "dateOfBirth": "1990-01-01",
-    "gender": "Female",
-    "farmerID": "FAR-001",
-}
+# The CSV plugin looks up column "id" using the access-token subject claim "sub".
+FARMER_CLAIMS = {"sub": "F001"}
 
 SD_JWT_PRESENTATION_DEFINITION = {
     "id": "inji-verify-conformance-sd-jwt",
@@ -200,6 +194,26 @@ def _exposed_value(info: dict[str, Any], key: str) -> Optional[str]:
     return None
 
 
+def _credential_offer_waits(client: OidfClient, test_id: str) -> int:
+    """Count suite pauses that still need a credential offer.
+
+    Multiple-client modules stay in WAITING across both pauses, so the status
+    value alone cannot tell the second pause from the first.
+    """
+    try:
+        logs = client._client.get(f"api/log/{test_id}").json()
+    except Exception:
+        return 0
+    if not isinstance(logs, list):
+        return 0
+    return sum(
+        1
+        for entry in logs
+        if entry.get("src") == "VCIWaitForCredentialOffer"
+        and "Waiting for call to credential offer endpoint" in (entry.get("msg") or "")
+    )
+
+
 def deliver_credential_offer(client: OidfClient, test_id: str, info: dict[str, Any], mapping: dict[str, str]) -> None:
     offer_url = _exposed_value(info, "credential_offer_endpoint")
     if not offer_url:
@@ -228,12 +242,12 @@ def deliver_credential_offer(client: OidfClient, test_id: str, info: dict[str, A
     if not offer_uri:
         raise RuntimeError(f"Certify did not return a credential offer URI: {inner}")
     offer_json = _load_credential_offer(certify, offer_uri, certify_api)
-    print(f"Delivering credential offer for {test_id}")
-    # Suite 5.31 rejects http:// offer URIs; send the offer by value instead.
-    delivered = client._client.get(offer_url, params={"credential_offer": json.dumps(offer_json)})
-    if delivered.status_code >= 400:
+    # Suite 5.3.1 rejects http:// offer URIs; send the offer by value instead.
+    handed = client._client.get(offer_url, params={"credential_offer": json.dumps(offer_json)})
+    print(f"Delivering credential offer for {test_id}: HTTP {handed.status_code}")
+    if handed.status_code >= 400:
         raise RuntimeError(
-            f"Suite rejected credential offer: HTTP {delivered.status_code}: {delivered.text[:300]}"
+            f"Suite rejected credential offer: HTTP {handed.status_code}: {handed.text[:300]}"
         )
 
 
@@ -374,16 +388,28 @@ def execute_plan(
         started = client.start_module(plan_id, name, module_variant)
         test_id = started.get("id") or started.get("testId")
         waiting = None
+        repeat_waiting = False
         if component == "certify":
-            waiting = lambda tid, waiting_info: _safe_waiting(
-                deliver_credential_offer, client, tid, waiting_info, mapping
-            )
+            offers_sent = {"count": 0}
+
+            def waiting(tid, waiting_info, offers_sent=offers_sent):
+                if _credential_offer_waits(client, tid) > offers_sent["count"]:
+                    _safe_waiting(deliver_credential_offer, client, tid, waiting_info, mapping)
+                    offers_sent["count"] += 1
+
+            repeat_waiting = True
         elif component == "verify":
             waiting = lambda tid, waiting_info: _safe_waiting(
                 deliver_vp_authorization_request, client, tid, waiting_info, mapping
             )
         try:
-            info = client.wait_for_finished(test_id, timeout=module_timeout, on_waiting=waiting)
+            info = client.wait_for_finished(
+                test_id,
+                timeout=module_timeout,
+                poll=0.5,
+                on_waiting=waiting,
+                repeat_waiting=repeat_waiting,
+            )
         except ConformanceError as exc:
             # One stuck module must not destroy the whole evidence run: record
             # it and let the benchmark gate decide the exit code. Modules with
@@ -483,7 +509,7 @@ def parse_args() -> argparse.Namespace:
     group.add_argument("--combined", action="store_true")
     parser.add_argument("--suite-url", default=os.environ.get("CONFORMANCE_SERVER", "https://localhost.emobix.co.uk:8443/"))
     parser.add_argument("--token", default=os.environ.get("CONFORMANCE_TOKEN"))
-    parser.add_argument("--certify-issuer-url", default=os.environ.get("CERTIFY_ISSUER_URL") or os.environ.get("ENV_ENDPOINT", "http://certify-nginx"))
+    parser.add_argument("--certify-issuer-url", default=os.environ.get("CERTIFY_ISSUER_URL") or os.environ.get("ENV_ENDPOINT", "https://certify-nginx"))
     parser.add_argument("--verify-endpoint", default=os.environ.get("VERIFY_ENDPOINT", "http://verify-service:8080/v1/verify"))
     parser.add_argument("--credential-configuration-id", default=os.environ.get("CERTIFY_CREDENTIAL_CONFIGURATION_ID", "FarmerCredential"))
     parser.add_argument("--output-dir", type=Path, default=Path("results"))

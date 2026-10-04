@@ -115,18 +115,21 @@ class OidfClient:
         timeout: int = 600,
         poll: float = 3.0,
         on_waiting=None,
+        repeat_waiting: bool = False,
     ) -> dict:
         deadline = time.time() + timeout
         last: dict = {}
-        offered = False
+        waiting = False
         while time.time() < deadline:
             last = self.get_info(test_id)
             status = (last.get("status") or last.get("state") or "").upper()
             if status in {"FINISHED", "INTERRUPTED"}:
                 return last
-            if status == "WAITING" and on_waiting and not offered:
+            if status == "WAITING" and on_waiting and (repeat_waiting or not waiting):
                 on_waiting(test_id, last)
-                offered = True
+                waiting = True
+            elif status != "WAITING":
+                waiting = False
             time.sleep(poll)
         raise ConformanceError(f"Timed out waiting for test {test_id}; last={last}")
 

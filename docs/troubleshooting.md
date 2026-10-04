@@ -21,10 +21,22 @@
 
 - First boot only runs `certify_init.sql` / `verify/init.sql`. Recreate volumes: `docker compose --env-file compose/.env -f compose/docker-compose.yml down -v`
 - After changing `CERTIFY_IMAGE` (for example 0.14.0 to 1.0.0-alpha.1), recreate the `certify-pg` volume the same way. The 0.14 schema does not start 1.0.
+- Certify 1.0 also needs `inji.keystore.file.path` (embedded inji-verify). The committed `certify-default.properties` sets it to `classpath:sample-keystore/test.p12`.
+- `KER-KMA-004 No such alias` means `certify-pkcs12` and the keymanager tables are out of sync. Truncate `certify.key_alias` / `certify.key_store` or recreate both the PKCS12 volume and `certify-pg`. The PKCS12 volume is mounted at `/home/inji/CERTIFY_PKCS12` (Certify's working directory). After replacing `certify-service.jar` in a running container, keep that volume so keys stay aligned with Postgres.
 
 ## TestNG finds no modules
 
 - `results/<mode>/results.json` is missing or the official script path was used without a mapper. Re-run without `--official-script`, or inspect the official export zip.
+
+## Credential offer fails with `unknown_claims`
+
+Certify 1.0 compares offer claims to `credential_metadata.claims` in `/.well-known/openid-credential-issuer`. For `dc+sd-jwt` FarmerCredential that list is empty, so any named claim is rejected. The runner sends `{}`.
+
+## Credential endpoint HTTP 500
+
+Suite 5.3.1 adds a random JSON field to the credential request, and its wallet proof sets `iss` to the static client id. Certify 1.0.0-alpha.1 rejects unknown JSON fields and rejects that `iss` because pre-authorized access tokens are minted with an empty `client_id`. After `compose up`, run `python scripts/patch-certify-ignore-unknown.py` and copy the patched JAR into the `certify` container. Restart `certify` after copying. The sources are `compose/certify/patch/CredentialRequest.java` and `compose/certify/patch/JwtProofValidator.java`.
+
+Issuer plans must use `fapi_profile: vci` (not `plain_fapi`). `plain_fapi` skips credential-issuer metadata, so the suite sends `credential_configuration_id: null` and no proofs.
 
 ## All modules skipped but BUILD SUCCESS
 
