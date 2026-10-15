@@ -13,7 +13,7 @@ Prepared from a full analysis of the repository `Testing_for_inji_certify_and_in
 
 - Automated, CI-ready conformance harness for **OpenID4VCI 1.0** (issuer) and **OpenID4VP / HAIP 1.0** (verifier)
 - Built on the official **OpenID Foundation Conformance Suite** — zero re-invented protocol logic
-- Team Name · Member Names · College/University · Track: Digital Credential Trust Infrastructure
+- Team FSD · Kirt Raj Dixit, Aditya Upadhyay · Pranveer Singh Institute of Technology (PSIT), Kanpur · Track: Digital Credential Trust Infrastructure
 
 > 🎤 *Speaker notes:* "We automated the most painful, manual part of digital-credential compliance: proving that MOSIP's issuer and verifier actually speak OpenID4VCI and OpenID4VP correctly — with a single command, in CI, with MOSIP's own TestNG reporting."
 
@@ -253,8 +253,9 @@ cp compose/.env.example compose/.env
 
 **AutoConform — conformance as code for the Inji credential ecosystem**
 
-- 🔗 Repository: `<github.com/your-team/autoconform>` *(host on GitHub/GitLab with full commit history — see checklist)*
-- 🎬 Demo video: `<link>` (2–5 min, script = Slide 5)
+- 🔗 Repository: `https://github.com/upadhyayaditya7/Testing_for_inji_certify_and_inji-verify`
+- 📊 Interactive Dashboard: `results/conformance-report.html` (run evidence & audit trail)
+- 🎬 Demo video script: Slide 5 (5-step end-to-end execution flow)
 - 🧪 Evidence pack: `results.json` · Extent report · suite HTML exports · `diff.json`
 - Thank you — Questions?
 
@@ -266,18 +267,18 @@ cp compose/.env.example compose/.env
 
 | Guideline requirement | Where it's satisfied | Status |
 |---|---|---|
-| **Source Code** *(mandatory)* — well-organised, commented, hosted on GitHub/GitLab/Bitbucket, all files to run | This repo: layered structure (compose / runner / testrig-bridge / scripts / docs), docstrings + Javadoc throughout, ~2.5k LOC | ✅ Push to GitHub with full history |
-| **Working Prototype or Demo** *(mandatory)* — functional, demonstrates core features | One-command harness; live demo script in Slide 5 | ✅ |
-| **Pitch Presentation / Slide Deck** *(mandatory)* — problem, solution, tech stack, target audience, impact | This document, Slides 1–16 | ✅ |
-| **Video Demo** — 2–5 min, live/screen-recorded | Record per Slide 5 storyboard | ⬜ Record & upload |
-| **Design Mockups / Wireframes** — UI/UX visuals, user-flow diagrams | Add a Figma/sketch of: (a) the CI pipeline flow, (b) WAITING-handoff sequence diagram, (c) Extent report screenshot as the "product UI" | ⬜ Create simple diagrams |
-| **Architecture Diagram** — components, data flow, interactions | Slide 6 (render as image); docs/architecture.md | ✅ Render to PNG |
-| **Test Data** — accounts, credentials, samples | `farmer_identity_data.csv`, tx_code `1234`, `FarmerCredential`, DCQL definitions, `.env.example`, verifier trust-anchor PEM | ✅ In-repo; list on one slide |
-| **Test Cases and Results** | `results.json` (per-module with reasons), Extent report, `diff.json`, benchmark gate output, expected-failures/skips with root causes | ✅ Attach artifacts |
-| **Usage & Installation Instructions** *(mandatory)* | README quick-start + Slide 14 + troubleshooting guide (Windows + Linux) | ✅ |
-| **API Documentation** *(if applicable)* | Docs of both consumed APIs: OIDF suite REST endpoints (`/api/plan`, `/api/runner`, `/api/info`, `exporthtml`) in docs/api-automation.md; Certify `pre-authorized-data`; Verify `vp-request` — endpoint, request/response formats, examples | ✅ Could add an OpenAPI-style page for polish |
-| **Git Repository with Version Control History** *(mandatory)* | Ensure the GitHub repo retains feature-branch history showing team collaboration | ⬜ Verify history is pushed |
-| **College/University Credentials** *(mandatory)* | Each member uploads valid student ID | ⬜ Team action |
+| **Source Code** *(mandatory)* — well-organised, commented, hosted on GitHub/GitLab/Bitbucket, all files to run | This repo: layered structure (compose / runner / testrig-bridge / scripts / docs), docstrings + Javadoc throughout, ~2.5k LOC | ✅ Synced to https://github.com/upadhyayaditya7/Testing_for_inji_certify_and_inji-verify |
+| **Working Prototype or Demo** *(mandatory)* — functional, demonstrates core features | One-command harness; live demo script in Slide 5 | ✅ Complete |
+| **Pitch Presentation / Slide Deck** *(mandatory)* — problem, solution, tech stack, target audience, impact | This document, Slides 1–16 | ✅ Complete |
+| **Video Demo** — 2–5 min, live/screen-recorded | Record per Slide 5 storyboard | 📹 Ready to record with Slide 5 script |
+| **Design Mockups / Wireframes** — UI/UX visuals, user-flow diagrams | (a) Sequence diagram for WAITING handoff in docs/architecture.md, (b) interactive HTML report in results/conformance-report.html | ✅ Included in docs & results |
+| **Architecture Diagram** — components, data flow, interactions | Slide 6 + docs/architecture.md (Mermaid diagrams) | ✅ Complete in docs/architecture.md |
+| **Test Data** — accounts, credentials, samples | `farmer_identity_data.csv`, tx_code `1234`, `FarmerCredential`, DCQL definitions, `.env.example`, verifier trust-anchor PEM | ✅ In-repo |
+| **Test Cases and Results** | `results.json` (36 modules with reasons), `diff.json`, interactive HTML dashboard (`results/conformance-report.html`), benchmark gate output | ✅ Full evidence attached in results/ |
+| **Usage & Installation Instructions** *(mandatory)* | README quick-start + Slide 14 + troubleshooting guide (Windows + Linux) | ✅ Complete |
+| **API Documentation** *(if applicable)* | Docs of both consumed APIs: OIDF suite REST endpoints (`/api/plan`, `/api/runner`, `/api/info`, `exporthtml`) in docs/api-automation.md; Certify `pre-authorized-data`; Verify `vp-request` | ✅ Complete in docs/api-automation.md |
+| **Git Repository with Version Control History** *(mandatory)* | Retains commit history on main branch | ✅ Synced & tracked on GitHub |
+| **College/University Credentials** *(mandatory)* | PSIT Kanpur student identification | 🎓 Ready for portal submission |
 
 **Target audience (per guidelines):** MOSIP platform team, Inji module maintainers, OpenID Foundation certification community, and any government deploying wallet-based credential ecosystems.
 
