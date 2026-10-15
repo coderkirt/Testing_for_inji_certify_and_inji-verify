@@ -17,7 +17,16 @@ target/
 testrig-bridge/target/
 
 # Runtime artifacts. Suite exports and local jar rebuilds stay out of git.
-results/
+results/**/*.zip
+results/*.zip
+!results/results.json
+!results/baseline.json
+!results/diff.json
+!results/conformance-report.html
+!results/index.html
+!results/certify/results.json
+!results/verify/results.json
+!results/combined/results.json
 tmp/
 .tmp-certify-patch/
 mongo/data/
