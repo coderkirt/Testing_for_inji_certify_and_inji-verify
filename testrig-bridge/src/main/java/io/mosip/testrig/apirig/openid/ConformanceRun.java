@@ -3,6 +3,7 @@ package io.mosip.testrig.apirig.openid;
 import java.util.Collections;
 import java.util.List;
 
+// One runner invocation: mode, timestamps, and the module list.
 public class ConformanceRun {
     public String mode;
     public boolean benchmarkMet = true;

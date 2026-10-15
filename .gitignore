@@ -16,7 +16,7 @@ venv/
 target/
 testrig-bridge/target/
 
-# Runtime artifacts
+# Runtime artifacts. Suite exports and local jar rebuilds stay out of git.
 results/
 tmp/
 .tmp-certify-patch/

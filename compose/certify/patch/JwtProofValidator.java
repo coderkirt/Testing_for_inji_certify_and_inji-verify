@@ -40,6 +40,7 @@ import static io.mosip.certify.core.constants.ErrorConstants.UNSUPPORTED_ALGORIT
 import static io.mosip.certify.proof.DIDkeysProofManager.DID_KEY_PREFIX;
 
 @Component
+// Proof iss is checked only when the access token has a non-empty client id.
 public class JwtProofValidator implements ProofValidator {
 
     private static final Logger log = LoggerFactory.getLogger(JwtProofValidator.class);

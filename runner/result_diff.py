@@ -1,4 +1,7 @@
-"""Diff two harness results.json files and emit a human-readable summary."""
+"""Diff two harness results.json files and emit a human-readable summary.
+
+Expected skips stay visible so a later run can be compared without treating them as new failures.
+"""
 
 from __future__ import annotations
 

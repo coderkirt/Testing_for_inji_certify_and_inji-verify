@@ -1,3 +1,4 @@
+-- Local Verify schema. Init runs once, when the database volume is empty.
 CREATE SCHEMA IF NOT EXISTS verify;
 
 CREATE TABLE IF NOT EXISTS verify.authorization_request_details (

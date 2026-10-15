@@ -25,7 +25,7 @@ Usage:
 
 Environment:
   CONFORMANCE_SERVER   default https://localhost.emobix.co.uk:8443/
-  CERTIFY_ISSUER_URL   issuer URL the suite will call (docker DNS or host)
+  CERTIFY_ISSUER_URL   issuer URL the suite will call (default https://certify-nginx)
   VERIFY_ENDPOINT      verifier API the suite will call
   ENV_ENDPOINT         api-testrig endpoint; used as CERTIFY_ISSUER_URL when set
 EOF
@@ -135,7 +135,7 @@ export CONFORMANCE_SERVER="${CONFORMANCE_SERVER:-https://localhost.emobix.co.uk:
 if [[ -n "${ENV_ENDPOINT:-}" && -z "${CERTIFY_ISSUER_URL:-}" ]]; then
   export CERTIFY_ISSUER_URL="${ENV_ENDPOINT}"
 fi
-export CERTIFY_ISSUER_URL="${CERTIFY_ISSUER_URL:-http://certify-nginx}"
+export CERTIFY_ISSUER_URL="${CERTIFY_ISSUER_URL:-https://certify-nginx}"
 export VERIFY_ENDPOINT="${VERIFY_ENDPOINT:-http://verify-service:8080/v1/verify}"
 
 OUT_DIR="${ROOT}/results/${MODE}"

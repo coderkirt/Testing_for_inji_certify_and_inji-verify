@@ -61,6 +61,7 @@ import static io.mosip.certify.utils.VCIssuanceUtil.getScopeCredentialMapping;
 
 @Service
 @ConditionalOnProperty(value = "mosip.certify.plugin-mode", havingValue = "DataProvider")
+// Unknown credential identifiers fail before proof handling. SD-JWT cnf comes from the proof key.
 public class CertifyIssuanceServiceImpl implements VCIssuanceService {
 
     private static final Logger log = LoggerFactory.getLogger(CertifyIssuanceServiceImpl.class);

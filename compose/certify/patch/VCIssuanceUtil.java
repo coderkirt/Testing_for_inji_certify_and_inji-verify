@@ -18,6 +18,7 @@ import java.time.ZoneOffset;
 import java.util.*;
 
 @Slf4j
+// A credential configuration id that is not in metadata is unknown_credential_configuration.
 public class VCIssuanceUtil {
 
     private VCIssuanceUtil() {

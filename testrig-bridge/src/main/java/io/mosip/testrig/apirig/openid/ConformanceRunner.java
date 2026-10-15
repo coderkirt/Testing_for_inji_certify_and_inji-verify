@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
  * Invokes the Python conformance runner so TestNG can own the same env.endpoint
  * the existing api-testrig already targets.
  */
+// Starts runner/run_conformance.py or reads a results file the runner already wrote.
 public final class ConformanceRunner {
     private ConformanceRunner() {
     }

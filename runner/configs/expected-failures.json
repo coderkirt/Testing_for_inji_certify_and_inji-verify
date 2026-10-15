@@ -1,5 +1,5 @@
 {
-  "_comment": "Known product gaps become TestNG skips. Certify 1.0.0-alpha.1 accepts credential_configuration_id; do not list those issuer modules here. Verify 0.18.2 is still OpenID4VP draft 21, not HAIP 1.0 Final.",
+  "_comment": "Known product gaps become TestNG skips. Do not list the seven required Certify 1.0 issuer modules here. Verify 0.18.2 is still OpenID4VP draft 21, not HAIP 1.0 Final.",
   "modules": {
     "oid4vp-1final-verifier-happy-flow": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)",
     "oid4vp-1final-verifier-minimal-cnf-jwk": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)",

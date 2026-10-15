@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 120
     env:
       CONFORMANCE_SERVER: https://localhost.emobix.co.uk:8443/
-      CERTIFY_ISSUER_URL: http://certify-nginx
+      CERTIFY_ISSUER_URL: https://certify-nginx
       VERIFY_ENDPOINT: http://verify-service:8080/v1/verify
     steps:
       - uses: actions/checkout@v4

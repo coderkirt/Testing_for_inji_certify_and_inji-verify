@@ -2,6 +2,7 @@ package io.mosip.testrig.apirig.openid;
 
 import org.testng.Assert;
 
+// Fails the Maven run when the saved results miss the benchmark in runner/configs/benchmark.json.
 public final class BenchmarkGate {
     private BenchmarkGate() {
     }

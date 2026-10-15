@@ -14,7 +14,7 @@
 
 ## Certify or Verify not reachable from the suite
 
-- Plan URLs must be Docker DNS names (`http://certify-nginx`, `http://verify-service:8080/v1/verify`), not `localhost`, when the runner is driving a compose stack.
+- Plan URLs must be Docker DNS names (`https://certify-nginx`, `http://verify-service:8080/v1/verify`), not `localhost`, when the runner is driving a compose stack. Recreating the `certify` container drops a jar that was copied in; `docker start` keeps it.
 - When pointing at a deployed env (api-testrig `ENV_ENDPOINT`), set `CERTIFY_ISSUER_URL` / `VERIFY_ENDPOINT` to the public URLs the suite container can route to.
 
 ## Postgres init failed

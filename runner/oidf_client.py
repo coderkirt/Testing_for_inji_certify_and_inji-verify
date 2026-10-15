@@ -117,6 +117,7 @@ class OidfClient:
         on_waiting=None,
         repeat_waiting: bool = False,
     ) -> dict:
+        """Poll until FINISHED. repeat_waiting delivers another offer on each WAITING pause."""
         deadline = time.time() + timeout
         last: dict = {}
         waiting = False

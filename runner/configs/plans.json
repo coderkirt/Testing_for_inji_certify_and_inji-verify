@@ -1,4 +1,5 @@
 {
+  "_comment": "certify is the OID4VCI 1.0 issuer plan. verify is the OpenID4VP verifier plan.",
   "certify": {
     "component": "certify",
     "role": "issuer",

@@ -26,3 +26,5 @@ docker compose -f compose/docker-compose.yml up -d mongodb server nginx verify-d
 ```
 
 Image tags are pinned in `.env.example` and can be overridden for 1.0.x releases.
+
+`docker compose up` can recreate `certify`. A `certify-service.jar` copied into that container survives `docker start` and is lost on recreate.

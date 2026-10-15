@@ -1,5 +1,6 @@
 package io.mosip.testrig.apirig.openid;
 
+// One suite module as stored in results.json.
 public class ModuleResult {
     public String component;
     public String planName;

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
+// Null display fields are omitted so issuer metadata stays valid.
 public class MetaDataDisplay implements Serializable {
     private Logo logo;
     private String name;

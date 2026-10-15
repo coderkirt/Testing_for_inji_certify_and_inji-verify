@@ -5,6 +5,7 @@ Wraps the suite REST API (same flow as run-test-plan.py): create plan, start
 each module, poll to FINISHED, export, emit results.json for the TestNG bridge.
 
 Official scripts/run-test-plan.py can be used instead with --official-script.
+Certify modules that pause twice need repeat_waiting so the second offer is delivered.
 """
 
 from __future__ import annotations

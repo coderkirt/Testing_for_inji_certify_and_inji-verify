@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+// Suite 5.3.1 sprinkles unknown fields onto this body.
 public class CredentialRequest {
 
     @JsonProperty("credential_configuration_id")

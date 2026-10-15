@@ -2,6 +2,7 @@
 
 - CredentialRequest ignores unknown JSON fields.
 - JwtProofValidator does not require proof iss to match an empty client_id.
+- DPoP binding, display metadata, and unknown-credential errors are compiled in the same pass.
 """
 
 from __future__ import annotations

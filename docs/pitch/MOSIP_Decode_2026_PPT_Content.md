@@ -100,7 +100,7 @@ Prepared from a full analysis of the repository `Testing_for_inji_certify_and_in
 ```
 
 - **Three clean layers:** Infrastructure (compose) · Orchestration (Python) · Reporting (Java/TestNG)
-- Network aliasing trick: suite nginx is aliased `localhost.emobix.co.uk` so advertised BASE_URL callbacks just work; plans use Docker DNS names (`http://certify-nginx`) because *the suite container*, not the host, calls the implementations
+- Network aliasing trick: suite nginx is aliased `localhost.emobix.co.uk` so advertised BASE_URL callbacks just work; plans use Docker DNS names (`https://certify-nginx`) because *the suite container*, not the host, calls the implementations
 
 > 🎤 *Speaker notes:* Point out the deliberate boundaries: "orchestration only" — protocol logic in the OIDF suite, reporting in MOSIP api-testrig conventions. This is what makes it a drop-in, not a fork.
 

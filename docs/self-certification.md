@@ -8,4 +8,4 @@ Local Docker runs are for CI gates. Official self-certification uses the OpenID 
 4. Follow [How to Certify Your Implementation](https://openid.net/certification/how-to-certify-your-implementation/).
 5. Use the hosted certification environment when a signed package is required. The local suite (`dev` profile, no token) is not a substitute for a paid certification submission.
 
-Keep `expected-failures.json` empty for a certification candidate. Known issues belong in a waiver, not a silent skip.
+Keep `expected-failures.json` empty for a certification candidate. Known issues belong in a waiver, not a silent skip. Modules in `expected-skips.json` were not executed, so they are not evidence for a submission.

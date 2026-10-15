@@ -6,7 +6,7 @@ The OpenID Foundation documents the same REST flow used by `scripts/run-test-pla
 2. `POST /api/plan?planName=...&variant={...}` with the plan configuration JSON as the body.
 3. `GET /api/plan/{id}` lists modules.
 4. `POST /api/runner?test=MODULE&plan=PLAN_ID&variant={...}` starts a module.
-5. Poll `GET /api/info/{testId}` until `status` is `FINISHED` or `INTERRUPTED`.
+5. Poll `GET /api/info/{testId}` until `status` is `FINISHED` or `INTERRUPTED`. A module can stay `WAITING` across two offer pauses; the runner counts those pauses instead of treating the second one as the same wait.
 6. Export `GET /api/plan/exporthtml/{planId}` for the human-readable zip.
 
 `runner/run_conformance.py` is a thin wrapper around that API. It:

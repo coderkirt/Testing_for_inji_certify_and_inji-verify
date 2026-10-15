@@ -1,6 +1,7 @@
 -- Schema excerpt from inji-certify v1.0.0-alpha.1 docker-compose-injistack.
 -- Locale clauses omitted so the init script works on stock postgres:15 images.
 -- FarmerCredential stays dc+sd-jwt so the OID4VCI 1.0 issuer plan can request it.
+-- This script runs only on an empty Postgres volume.
 
 CREATE DATABASE inji_certify
     ENCODING = 'UTF8'

@@ -1,6 +1,6 @@
 {
   "alias": "inji-certify-openid-1_0",
-  "description": "Inji Certify OpenID4VCI 1.0 issuer plan (local harness)",
+  "description": "Inji Certify OpenID4VCI 1.0 issuer plan (local harness, https://certify-nginx)",
   "publish": "everything",
   "server": {
     "discoveryIssuer": "${CERTIFY_ISSUER_URL}"

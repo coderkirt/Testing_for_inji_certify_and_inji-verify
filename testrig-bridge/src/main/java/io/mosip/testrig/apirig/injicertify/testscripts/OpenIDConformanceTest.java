@@ -9,6 +9,7 @@ import io.mosip.testrig.apirig.openid.OpenIDConformanceSupport;
  * Drop-in TestNG class for the Inji Certify api-testrig.
  * Copy this class (and the shared openid package) into mosip-functional-tests.
  */
+// Certify TestNG suite. One test method per issuer module in results.json.
 public class OpenIDConformanceTest extends OpenIDConformanceSupport {
     public OpenIDConformanceTest() {
         super("certify");

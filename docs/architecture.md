@@ -28,7 +28,7 @@ run-conformance.sh
 
 ## Network
 
-All containers share `inji-openid-conformance`. The suite nginx service is aliased as `localhost.emobix.co.uk` so implementations can call back using the suite's advertised `BASE_URL`. The runner on the host talks to `https://localhost.emobix.co.uk:8443` (add that name to the host file). Plan JSON uses Docker DNS names (`http://certify-nginx`, `http://verify-service:8080/v1/verify`) because the suite process, not the host, calls the implementation.
+All containers share `inji-openid-conformance`. The suite nginx service is aliased as `localhost.emobix.co.uk` so implementations can call back using the suite's advertised `BASE_URL`. The runner on the host talks to `https://localhost.emobix.co.uk:8443` (add that name to the host file). Plan JSON uses Docker DNS names (`https://certify-nginx`, `http://verify-service:8080/v1/verify`) because the suite process, not the host, calls the implementation.
 
 ## What this repo does not do
 

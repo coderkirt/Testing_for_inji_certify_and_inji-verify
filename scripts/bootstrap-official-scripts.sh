@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Optional: vendor official OIDF automation scripts next to our wrapper.
+# The default path is runner/run_conformance.py; this script is only for --official-script.
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DEST="${ROOT}/runner/vendor"

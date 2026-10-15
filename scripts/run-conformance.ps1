@@ -1,4 +1,5 @@
 # Windows entry point for the same one-command harness.
+# -SkipCompose leaves the running Certify container, and its patched jar, alone.
 param(
     [ValidateSet("certify", "verify")]
     [string]$Component,

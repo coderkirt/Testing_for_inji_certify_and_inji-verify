@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
+// Access tokens minted from a DPoP token request carry cnf.jkt.
 public class AccessTokenJwtUtil {
 
     private static final Logger log = LoggerFactory.getLogger(AccessTokenJwtUtil.class);

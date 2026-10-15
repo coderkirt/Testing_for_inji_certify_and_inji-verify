@@ -1,6 +1,6 @@
 # api-testrig bridge
 
-Drop-in TestNG classes that turn `results.json` from the Python runner into the same TestNG / Extent reports the MOSIP api-testrig already publishes.
+Drop-in TestNG classes that turn `results.json` from the Python runner into the same TestNG / Extent reports the MOSIP api-testrig already publishes. With `conformance.reuseResults=true` the bridge reads the saved file and does not call Certify again.
 
 ## Standalone
 

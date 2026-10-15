@@ -16,6 +16,7 @@ import com.aventstack.extentreports.reporter.ExtentSparkReporter;
  * Writes an Extent Spark report next to TestNG output so results can land in
  * the same automationtests bucket the api-testrig already publishes.
  */
+// Writes the Extent report the api-testrig already publishes.
 public class ExtentReportListener implements ITestListener, IConfigurationListener {
     private ExtentReports extent;
     private final ThreadLocal<ExtentTest> current = new ThreadLocal<>();

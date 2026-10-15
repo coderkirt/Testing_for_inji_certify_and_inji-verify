@@ -2,6 +2,7 @@
 
 ```bash
 pip install -r runner/requirements.txt
+# CERTIFY_ISSUER_URL defaults to https://certify-nginx for the compose stack.
 python runner/run_conformance.py --component certify --output-dir results/certify
 python runner/run_conformance.py --combined --parallel --output-dir results/combined
 python runner/result_diff.py --previous results/previous.json --current results/combined/results.json

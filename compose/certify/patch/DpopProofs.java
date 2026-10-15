@@ -19,6 +19,7 @@ import java.util.Map;
 /**
  * Binds a DPoP proof to the access token confirmation key.
  */
+// Checks the DPoP proof signature, cnf.jkt, and ath. htu is not compared to the internal URL.
 public final class DpopProofs {
     private DpopProofs() {
     }

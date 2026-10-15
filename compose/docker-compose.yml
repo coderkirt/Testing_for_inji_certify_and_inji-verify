@@ -1,4 +1,5 @@
 # Full-stack harness: OpenID Foundation conformance suite + Inji Certify + Inji Verify.
+# Do not recreate certify after copying in a patched jar; docker start keeps that jar.
 # Shared network aliases let the suite reach the implementations and vice versa.
 # Usage:
 #   docker compose --env-file compose/.env -f compose/docker-compose.yml up -d

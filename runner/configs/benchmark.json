@@ -1,4 +1,5 @@
 {
+  "_comment": "Seven required issuer modules must run. Expected skips do not count as failures. Pass rate includes skips in the total.",
   "minPassRate": 0.5,
   "failOnUnexpectedFailure": true,
   "failOnUnexpectedSkip": false,

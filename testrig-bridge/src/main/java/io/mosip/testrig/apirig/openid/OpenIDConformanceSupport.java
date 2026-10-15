@@ -12,6 +12,7 @@ import org.testng.annotations.DataProvider;
 
 /**
  * Shared TestNG lifecycle used by the per-module and combined suites.
+ * Expected skips are reported as skipped tests, not failures.
  */
 public abstract class OpenIDConformanceSupport {
     private ConformanceRun run;

@@ -15,11 +15,16 @@ This repo does **not** implement OpenID protocol tests. It orchestrates the offi
 # Windows PowerShell
 .\scripts\run-conformance.ps1 -Component certify
 .\scripts\run-conformance.ps1 -Combined
+
+# After a patched certify-service.jar is already in the container:
+.\scripts\run-conformance.ps1 -Component certify -SkipCompose
 ```
 
 `scripts/run-full-stack-conformance.sh` is the combined-run alias.
 
 Each path: compose up → wait healthy → create/run/poll plans → `results.json` → TestNG/Extent → fail on benchmark regression.
+
+The suite calls Certify at `https://certify-nginx`. `-SkipCompose` does not recreate that container, so a jar copied into it stays in place.
 
 ## Prerequisites
 

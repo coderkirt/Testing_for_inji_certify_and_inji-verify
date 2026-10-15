@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
+// This DTO is what the well-known endpoint serializes. Null display fields are omitted.
 public class MetaDataDisplayDTO {
     private Logo logo;
     private String name;

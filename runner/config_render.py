@@ -1,4 +1,7 @@
-"""Render plan JSON templates by substituting ${ENV} and known endpoint keys."""
+"""Render plan JSON templates by substituting ${ENV} and known endpoint keys.
+
+CERTIFY_ISSUER_URL in this harness is https://certify-nginx.
+"""
 
 from __future__ import annotations
 

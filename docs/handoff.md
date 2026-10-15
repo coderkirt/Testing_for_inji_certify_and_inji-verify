@@ -6,7 +6,7 @@ Some OpenID4VP verifier modules wait for a wallet to complete a presentation. Th
 
 Most issuer metadata and pre-authorized-code modules are unattended. Authorization-code / HAIP variants may require a mocked authorization server. Keep those variants in `issuer-variant.json` only after Certify is configured for that grant.
 
-If a module cannot run unattended, add it to `runner/configs/expected-skips.json`.
+If a module cannot run unattended, add it to `runner/configs/expected-skips.json`. Certify happy-flow modules that pause twice need one credential offer per pause.
 
 ## Inji Verify (verifier)
 

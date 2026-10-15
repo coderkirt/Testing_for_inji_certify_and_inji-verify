@@ -10,6 +10,7 @@ import java.util.List;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+// Maps suite results onto PASS, FAIL, and SKIP, including expected skips.
 public final class ResultMapper {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 

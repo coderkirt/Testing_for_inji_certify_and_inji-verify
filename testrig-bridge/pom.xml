@@ -7,7 +7,7 @@
     <artifactId>openid-conformance-testrig-bridge</artifactId>
     <version>1.0.0</version>
     <name>OpenID Conformance api-testrig bridge</name>
-    <description>Drop-in TestNG suite that maps OIDF conformance results into api-testrig reports</description>
+    <description>Drop-in TestNG suite that maps OIDF conformance results for Certify and Verify into api-testrig reports</description>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>

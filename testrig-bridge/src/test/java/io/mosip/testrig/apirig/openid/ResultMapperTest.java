@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+// Checks PASS, FAIL, and expected-skip mapping without calling the suite.
 public class ResultMapperTest {
     @Test
     public void mapsPassFailSkipAndBenchmark() throws Exception {
