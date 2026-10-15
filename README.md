@@ -54,6 +54,12 @@ cd Testing_for_inji_certify_and_inji-verify
 .\scripts\run-conformance.ps1 -Combined
 ```
 
+### ⚡ 5-Second Instant Evaluator (No Docker Required)
+For judges and evaluators wanting to inspect test outputs, audit benchmark gates, and open the interactive dashboard instantly:
+```bash
+python scripts/evaluate.py
+```
+
 ### Fast Local Evaluation (Skip Docker Compose)
 If you already have instances running or wish to replay/generate results:
 ```powershell
