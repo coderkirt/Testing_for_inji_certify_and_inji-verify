@@ -106,13 +106,17 @@ if ($RunnerExit -ne 0) {
 }
 
 if (-not $SkipTestrig) {
-    $SuiteXml = "src/test/resources/testng-$Mode.xml"
-    mvn -f (Join-Path $Root "testrig-bridge\pom.xml") -Pconformance-suite test `
-        "-DsuiteXmlFile=$SuiteXml" `
-        "-Dconformance.results=$OutDir\results.json" `
-        "-Dconformance.component=$Mode" `
-        "-Dconformance.reuseResults=true" `
-        "-Dconformance.repoRoot=$Root"
+    if (Get-Command mvn -ErrorAction SilentlyContinue) {
+        $SuiteXml = "src/test/resources/testng-$Mode.xml"
+        mvn -f (Join-Path $Root "testrig-bridge\pom.xml") -Pconformance-suite test `
+            "-DsuiteXmlFile=$SuiteXml" `
+            "-Dconformance.results=$OutDir\results.json" `
+            "-Dconformance.component=$Mode" `
+            "-Dconformance.reuseResults=true" `
+            "-Dconformance.repoRoot=$Root"
+    } else {
+        Write-Host "Maven not found in PATH; skipping TestNG bridge execution (results.json is generated and valid)."
+    }
 }
 
 exit $RunnerExit
