@@ -153,8 +153,8 @@ def run_official_script(
     return subprocess.call(cmd, cwd=str(official.parent))
 
 
-# The CSV plugin looks up column "id" using the access-token subject claim "sub".
-FARMER_CLAIMS = {"sub": "F001"}
+# Certify 1.0 dc+sd-jwt FarmerCredential has empty claims list in metadata; send {} to avoid unknown_claims.
+FARMER_CLAIMS: dict[str, str] = {}
 
 SD_JWT_PRESENTATION_DEFINITION = {
     "id": "inji-verify-conformance-sd-jwt",
