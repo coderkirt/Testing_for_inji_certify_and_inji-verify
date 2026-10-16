@@ -124,7 +124,8 @@ class OidfClient:
         while time.time() < deadline:
             last = self.get_info(test_id)
             status = (last.get("status") or last.get("state") or "").upper()
-            if status in {"FINISHED", "INTERRUPTED"}:
+            result = (last.get("result") or "").upper()
+            if status in {"FINISHED", "INTERRUPTED"} or result in {"FAILED", "PASSED", "WARNING", "REVIEW"}:
                 return last
             if status == "WAITING" and on_waiting and (repeat_waiting or not waiting):
                 on_waiting(test_id, last)
