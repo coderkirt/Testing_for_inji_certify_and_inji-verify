@@ -48,7 +48,7 @@ Prepared from a full analysis of the repository `Testing_for_inji_certify_and_in
 
 **AutoConform = Docker stack + REST-driven runner + TestNG bridge, wired into CI**
 
-- 🐳 **Full-stack compose:** official OIDF conformance suite + Inji Certify 0.14 + Inji Verify 0.18.2 on one Docker network — `docker compose up -d` brings up 7 services
+- 🐳 **Full-stack compose:** official OIDF conformance suite + Inji Certify 1.0.0-alpha.1 + Inji Verify 0.18.2 on one Docker network — `docker compose up -d` brings up 7 services
 - ⚙️ **Orchestration-only runner (Python):** drives the suite REST API exactly like the official `run-test-plan.py` — create plan → run module → poll → export — but fully unattended
 - 🤝 **Automated WAITING handoff:** when the suite waits for a wallet, the runner *acts as the wallet*: it delivers credential offers to Certify and hands VP authorization requests to the suite's fake wallet
 - 📊 **MOSIP-native reporting:** every suite module becomes a TestNG test → Extent Spark report → benchmark gate that fails the build on regressions

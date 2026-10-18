@@ -1,6 +1,7 @@
 # AutoConform: Automated Conformance Testing for Inji Certify & Inji Verify
 
-[![CI](https://img.shields.io/badge/CI-Passing-success?style=for-the-badge&logo=github-actions)](.github/workflows/full-stack-conformance.yml)
+[![CI](https://github.com/upadhyayaditya7/Testing_for_inji_certify_and_inji-verify/actions/workflows/full-stack-conformance.yml/badge.svg)](https://github.com/upadhyayaditya7/Testing_for_inji_certify_and_inji-verify/actions/workflows/full-stack-conformance.yml)
+[![Live Dashboard](https://img.shields.io/badge/Live%20Dashboard-GitHub%20Pages-blueviolet?style=for-the-badge&logo=googlechrome&logoColor=white)](https://upadhyayaditya7.github.io/Testing_for_inji_certify_and_inji-verify/results/conformance-report.html)
 [![Benchmark](https://img.shields.io/badge/Benchmark-100%25%20Met-brightgreen?style=for-the-badge)](runner/configs/benchmark.json)
 [![OIDF Suite](https://img.shields.io/badge/OIDF%20Suite-v5.3.1-blue?style=for-the-badge)](https://gitlab.openid.net/openid/conformance-suite)
 [![MOSIP Testrig](https://img.shields.io/badge/MOSIP-api--testrig%20Native-orange?style=for-the-badge)](testrig-bridge/)
@@ -8,7 +9,8 @@
 
 > **MOSIP Decode 2026 Hackathon Submission**  
 > **Team FSD**: Kirt Raj Dixit · Aditya Upadhyay — Pranveer Singh Institute of Technology (PSIT), Kanpur  
-> **Track**: Digital Credential Trust Infrastructure / Automated Conformance Testing
+> **Track**: Digital Credential Trust Infrastructure / Automated Conformance Testing  
+> 🌐 **Live Interactive Audit Dashboard**: [https://upadhyayaditya7.github.io/Testing_for_inji_certify_and_inji-verify/](https://upadhyayaditya7.github.io/Testing_for_inji_certify_and_inji-verify/)
 
 ---
 
