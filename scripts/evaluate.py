@@ -110,7 +110,8 @@ def evaluate():
     dashboard_path = RESULTS_DIR / "conformance-report.html"
     if dashboard_path.exists():
         uri = dashboard_path.resolve().as_uri()
-        print(f"      Opening {CYAN}{uri}{RESET}")
+        print(f"      Local Dashboard : {CYAN}{uri}{RESET}")
+        print(f"      Live Web Report : {CYAN}https://upadhyayaditya7.github.io/Testing_for_inji_certify_and_inji-verify/results/conformance-report.html{RESET}")
         try:
             webbrowser.open(uri)
         except Exception:
