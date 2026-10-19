@@ -62,6 +62,17 @@ For judges and evaluators wanting to inspect test outputs, audit benchmark gates
 python scripts/evaluate.py
 ```
 
+### 🛡️ SD-JWT & Key-Binding Verification Engine
+Audit and verify selective disclosure claims and cryptographic key-binding on SD-JWT credentials directly via Python CLI:
+```bash
+python runner/sd_jwt_verifier.py --self-test
+```
+
+### 🧪 Run Python Unit Tests
+```bash
+python -m unittest discover tests
+```
+
 ### Fast Local Evaluation (Skip Docker Compose)
 If you already have instances running or wish to replay/generate results:
 ```powershell
