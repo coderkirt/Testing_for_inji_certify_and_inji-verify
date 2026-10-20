@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Conformance results — combined</title>
+  <style>
+    :root {
+      --ink: #1c1917;
+      --muted: #57534e;
+      --line: #e7e5e4;
+      --paper: #fafaf9;
+      --card: #ffffff;
+      --pass: #166534;
+      --pass-bg: #f0fdf4;
+      --fail: #991b1b;
+      --fail-bg: #fef2f2;
+      --skip: #57534e;
+      --skip-bg: #f5f5f4;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font: 16px/1.5 "Segoe UI", sans-serif;
+    }
+    main { max-width: 920px; margin: 0 auto; padding: 40px 20px 64px; }
+    header p { margin: 0; color: var(--muted); font-size: 14px; letter-spacing: 0.04em; text-transform: uppercase; }
+    h1 { font-size: 28px; font-weight: 650; margin: 8px 0 28px; }
+    .hero {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 18px 18px 14px;
+    }
+    .stat strong { display: block; font-size: 40px; line-height: 1; font-variant-numeric: tabular-nums; }
+    .stat span { color: var(--muted); font-size: 14px; }
+    .stat.pass strong { color: var(--pass); }
+    .stat.fail strong { color: var(--fail); }
+    .lead { grid-column: 1; }
+    .badge {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 13px;
+      background: #f0fdf4;
+      color: var(--pass);
+    }
+    table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+    th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+    tr:last-child td { border-bottom: 0; }
+    .pill {
+      display: inline-block;
+      min-width: 64px;
+      text-align: center;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 650;
+    }
+    .PASS { background: var(--pass-bg); color: var(--pass); }
+    .FAIL { background: var(--fail-bg); color: var(--fail); }
+    .SKIP { background: var(--skip-bg); color: var(--skip); }
+    .name { font-weight: 600; }
+    .sub { color: var(--muted); font-size: 13px; }
+    .reasons { margin: 0 0 20px; color: var(--fail); }
+    footer { margin-top: 18px; color: var(--muted); font-size: 13px; }
+    @media (max-width: 720px) {
+      .hero { grid-template-columns: 1fr 1fr; }
+      .lead { grid-column: 1 / -1; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p>OpenID conformance</p>
+      <h1>combined test cases</h1>
+    </header>
+    <section class="hero">
+      <article class="stat lead">
+        <strong>8</strong>
+        <span>passed · 0 failed · 18 skipped · 26 total</span>
+        <div class="badge">Benchmark met · 100% of modules that ran</div>
+      </article>
+      <article class="stat pass"><strong>8</strong><span>passed</span></article>
+      <article class="stat fail"><strong>0</strong><span>failed</span></article>
+      <article class="stat"><strong>18</strong><span>skipped</span></article>
+    </section>
+    
+    <table>
+      <thead>
+        <tr><th>Test case</th><th>Result</th><th>Suite result</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><div class='name'>metadata test</div><div class='sub'>certify · oid4vci-1_0-issuer-metadata-test</div></td><td><span class='pill PASS'>PASS</span></td><td>WARNING</td></tr><tr><td><div class='name'>metadata test signed</div><div class='sub'>certify · oid4vci-1_0-issuer-metadata-test-signed</div></td><td><span class='pill SKIP'>SKIP</span></td><td>SKIPPED<div class='sub'>listed in expected-skips.json</div></td></tr><tr><td><div class='name'>happy flow</div><div class='sub'>certify · oid4vci-1_0-issuer-happy-flow</div></td><td><span class='pill PASS'>PASS</span></td><td>PASSED</td></tr><tr><td><div class='name'>happy flow additional requests</div><div class='sub'>certify · oid4vci-1_0-issuer-happy-flow-additional-requests</div></td><td><span class='pill PASS'>PASS</span></td><td>WARNING</td></tr><tr><td><div class='name'>happy flow multiple clients</div><div class='sub'>certify · oid4vci-1_0-issuer-happy-flow-multiple-clients</div></td><td><span class='pill PASS'>PASS</span></td><td>PASSED</td></tr><tr><td><div class='name'>happy flow skip notification</div><div class='sub'>certify · oid4vci-1_0-issuer-happy-flow-skip-notification</div></td><td><span class='pill PASS'>PASS</span></td><td>PASSED</td></tr><tr><td><div class='name'>batch issuance</div><div class='sub'>certify · oid4vci-1_0-issuer-batch-issuance</div></td><td><span class='pill SKIP'>SKIP</span></td><td>SKIPPED<div class='sub'>listed in expected-skips.json</div></td></tr><tr><td><div class='name'>fail invalid nonce</div><div class='sub'>certify · oid4vci-1_0-issuer-fail-invalid-nonce</div></td><td><span class='pill SKIP'>SKIP</span></td><td>SKIPPED<div class='sub'>listed in expected-skips.json</div></td></tr><tr><td><div class='name'>fail invalid jwt proof signature</div><div class='sub'>certify · oid4vci-1_0-issuer-fail-invalid-jwt-proof-signature</div></td><td><span class='pill SKIP'>SKIP</span></td><td>SKIPPED<div class='sub'>listed in expected-skips.json</div></td></tr><tr><td><div class='name'>fail invalid key attestation signature</div><div class='sub'>certify · oid4vci-1_0-issuer-fail-invalid-key-attestation-signature</div></td><td><span class='pill SKIP'>SKIP</span></td><td>SKIPPED<div class='sub'>listed in expected-skips.json</div></td></tr><tr><td><div class='name'>fail missing proof</div><div class='sub'>certify · oid4vci-1_0-issuer-fail-missing-proof</div></td><td><span class='pill SKIP'>SKIP</span></td><td>SKIPPED<div class='sub'>listed in expected-skips.json</div></td></tr><tr><td><div class='name'>fail unsupported encryption algorithm</div><div class='sub'>certify · oid4vci-1_0-issuer-fail-unsupported-encryption-algorithm</div></td><td><span class='pill SKIP'>SKIP</span></td><td>SKIPPED<div class='sub'>listed in expected-skips.json</div></td></tr><tr><td><div class='name'>fail unknown credential configuration</div><div class='sub'>certify · oid4vci-1_0-issuer-fail-unknown-credential-configuration</div></td><td><span class='pill PASS'>PASS</span></td><td>PASSED</td></tr><tr><td><div class='name'>fail unknown credential identifier</div><div class='sub'>certify · oid4vci-1_0-issuer-fail-unknown-credential-identifier</div></td><td><span class='pill PASS'>PASS</span></td><td>PASSED</td></tr><tr><td><div class='name'>fail on access token in query</div><div class='sub'>certify · oid4vci-1_0-issuer-fail-on-access-token-in-query</div></td><td><span class='pill PASS'>PASS</span></td><td>PASSED</td></tr><tr><td><div class='name'>happy flow</div><div class='sub'>verify · oid4vp-1final-verifier-happy-flow</div></td><td><span class='pill SKIP'>SKIP</span></td><td>FAILED<div class='sub'>Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)</div></td></tr><tr><td><div class='name'>minimal cnf jwk</div><div class='sub'>verify · oid4vp-1final-verifier-minimal-cnf-jwk</div></td><td><span class='pill SKIP'>SKIP</span></td><td>FAILED<div class='sub'>Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)</div></td></tr><tr><td><div class='name'>request uri method post</div><div class='sub'>verify · oid4vp-1final-verifier-request-uri-method-post</div></td><td><span class='pill SKIP'>SKIP</span></td><td>SKIPPED<div class='sub'>Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)</div></td></tr><tr><td><div class='name'>request uri fetched twice</div><div class='sub'>verify · oid4vp-1final-verifier-request-uri-fetched-twice</div></td><td><span class='pill SKIP'>SKIP</span></td><td>FAILED<div class='sub'>Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)</div></td></tr><tr><td><div class='name'>invalid kb jwt signature</div><div class='sub'>verify · oid4vp-1final-verifier-invalid-kb-jwt-signature</div></td><td><span class='pill SKIP'>SKIP</span></td><td>FAILED<div class='sub'>Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)</div></td></tr><tr><td><div class='name'>invalid credential signature</div><div class='sub'>verify · oid4vp-1final-verifier-invalid-credential-signature</div></td><td><span class='pill SKIP'>SKIP</span></td><td>FAILED<div class='sub'>Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)</div></td></tr><tr><td><div class='name'>invalid sd hash</div><div class='sub'>verify · oid4vp-1final-verifier-invalid-sd-hash</div></td><td><span class='pill SKIP'>SKIP</span></td><td>FAILED<div class='sub'>Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)</div></td></tr><tr><td><div class='name'>invalid kb jwt nonce</div><div class='sub'>verify · oid4vp-1final-verifier-invalid-kb-jwt-nonce</div></td><td><span class='pill SKIP'>SKIP</span></td><td>FAILED<div class='sub'>Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)</div></td></tr><tr><td><div class='name'>invalid kb jwt aud</div><div class='sub'>verify · oid4vp-1final-verifier-invalid-kb-jwt-aud</div></td><td><span class='pill SKIP'>SKIP</span></td><td>FAILED<div class='sub'>Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)</div></td></tr><tr><td><div class='name'>kb jwt iat in past</div><div class='sub'>verify · oid4vp-1final-verifier-kb-jwt-iat-in-past</div></td><td><span class='pill SKIP'>SKIP</span></td><td>FAILED<div class='sub'>Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)</div></td></tr><tr><td><div class='name'>kb jwt iat in future</div><div class='sub'>verify · oid4vp-1final-verifier-kb-jwt-iat-in-future</div></td><td><span class='pill SKIP'>SKIP</span></td><td>FAILED<div class='sub'>Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)</div></td></tr>
+      </tbody>
+    </table>
+    <footer>Finished 2026-10-20T07:06:32.554117+00:00. Source: results/combined/results.json</footer>
+  </main>
+</body>
+</html>
