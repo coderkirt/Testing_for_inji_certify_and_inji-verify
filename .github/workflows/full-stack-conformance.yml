@@ -72,7 +72,9 @@ jobs:
           MODE="${{ github.event.inputs.component || 'combined' }}"
           chmod +x scripts/*.sh
           if [ "$MODE" = "combined" ]; then
-            ./scripts/run-conformance.sh --combined --skip-compose --parallel
+            # Modules stay one at a time. Starting several on one alias makes the
+            # suite interrupt a test that is already INTERRUPTED and return HTTP 409.
+            ./scripts/run-conformance.sh --combined --skip-compose
           else
             ./scripts/run-conformance.sh --component "$MODE" --skip-compose
           fi

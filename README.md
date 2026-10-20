@@ -81,4 +81,4 @@ export VERIFY_ENDPOINT=https://verify.example.org/v1/verify
 
 ## Parallel execution
 
-`--parallel` runs Certify and Verify plans together on a combined run, and starts suite modules concurrently (capped) inside each plan.
+`--parallel` runs the Certify and Verify plans at the same time. Modules inside one plan stay one at a time: the suite keeps a single active test per alias, and starting another while that test is already interrupted returns HTTP 409.
