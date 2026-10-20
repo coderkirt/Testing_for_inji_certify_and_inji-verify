@@ -37,7 +37,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "11"
+          java-version: "21"
 
       - name: Install runner dependencies
         run: pip install -r runner/requirements.txt
@@ -66,6 +66,15 @@ jobs:
           done
           docker compose -f compose/docker-compose.yml logs --tail=80
           exit 1
+
+      - name: Patch Certify for the issuer plan
+        run: |
+          MODE="${{ github.event.inputs.component || 'combined' }}"
+          if [ "$MODE" = "verify" ]; then
+            echo "Verify-only run; Certify patch is not required"
+            exit 0
+          fi
+          python scripts/patch-certify-ignore-unknown.py --install
 
       - name: Run conformance + TestNG bridge
         run: |

@@ -22,7 +22,7 @@ This repo does **not** implement OpenID protocol tests. It orchestrates the offi
 
 `scripts/run-full-stack-conformance.sh` is the combined-run alias.
 
-Each path: compose up → wait healthy → create/run/poll plans → `results.json` → TestNG/Extent → fail on benchmark regression.
+Each path: compose up → install the Certify issuer patch when Certify was just created → wait healthy → create/run/poll plans → `results.json` → TestNG/Extent → fail on benchmark regression. `-SkipCompose` does not reinstall the patch.
 
 The suite calls Certify at `https://certify-nginx`. `-SkipCompose` does not recreate that container, so a jar copied into it stays in place.
 
@@ -30,7 +30,7 @@ The suite calls Certify at `https://certify-nginx`. `-SkipCompose` does not recr
 
 - Docker + Docker Compose
 - Python 3.10+ (`pip install -r runner/requirements.txt`)
-- Java 11+ and Maven (for the TestNG bridge)
+- JDK 21+ (the Certify patch compiles with `--release 21`) and Maven (for the TestNG bridge)
 - Hosts entry: `127.0.0.1 localhost.emobix.co.uk`
 
 Copy `compose/.env.example` to `compose/.env` before the first run.

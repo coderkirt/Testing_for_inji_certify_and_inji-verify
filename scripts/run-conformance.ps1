@@ -87,6 +87,11 @@ $OutDir = Join-Path $Root "results\$Mode"
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
 
 $Python = if ($env:PYTHON) { $env:PYTHON } else { "python" }
+if (-not $SkipCompose -and $Mode -in @("combined", "certify")) {
+    Write-Host "Installing the Certify issuer patch into the new container"
+    & $Python (Join-Path $Root "scripts\patch-certify-ignore-unknown.py") --install
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+}
 $Runner = @(
     $Python, (Join-Path $Root "runner\run_conformance.py"),
     "--output-dir", $OutDir,

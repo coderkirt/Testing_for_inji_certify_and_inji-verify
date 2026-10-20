@@ -164,6 +164,11 @@ if [[ -z "${PYTHON_BIN}" ]]; then
   exit 1
 fi
 
+if [[ "${SKIP_COMPOSE}" -eq 0 && ( "${MODE}" == "combined" || "${MODE}" == "certify" ) ]]; then
+  echo "Installing the Certify issuer patch into the new container"
+  "${PYTHON_BIN}" "${ROOT}/scripts/patch-certify-ignore-unknown.py" --install
+fi
+
 RUNNER_CMD=("${PYTHON_BIN}" "${ROOT}/runner/run_conformance.py" --output-dir "${OUT_DIR}" --suite-url "${CONFORMANCE_SERVER}")
 if [[ "${COMBINED}" -eq 1 ]]; then
   RUNNER_CMD+=(--combined)

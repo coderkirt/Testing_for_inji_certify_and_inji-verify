@@ -7,11 +7,13 @@
 
 from __future__ import annotations
 
+import argparse
 import io
 import os
 import shutil
 import subprocess
 import sys
+import time
 import zipfile
 from pathlib import Path
 
@@ -35,7 +37,8 @@ SERVICE_CLASS_PREFIXES = (
     "BOOT-INF/classes/io/mosip/certify/entity/attributes/MetaDataDisplay",
     "BOOT-INF/classes/io/mosip/certify/utils/AccessTokenJwtUtil",
 )
-JAVAC = Path(r"C:\Program Files\Java\jdk-26.0.1\bin\javac.exe")
+DEFAULT_CONTAINER = "inji-openid-conformance-certify-1"
+JAR_IN_CONTAINER = "/home/inji/certify-service.jar"
 PROOF_LIB_PREFIXES = (
     "BOOT-INF/lib/nimbus-jose-jwt-",
     "BOOT-INF/lib/commons-lang3-",
@@ -45,6 +48,20 @@ PROOF_LIB_PREFIXES = (
     "BOOT-INF/lib/spring-jcl-",
     "BOOT-INF/lib/slf4j-api-",
 )
+
+
+def find_javac() -> str:
+    override = os.environ.get("JAVAC")
+    if override and Path(override).is_file():
+        return override
+    found = shutil.which("javac")
+    if found:
+        return found
+    fallback = Path(r"C:\Program Files\Java\jdk-26.0.1\bin\javac.exe")
+    if fallback.is_file():
+        return str(fallback)
+    print("javac not found. Install JDK 21+ or set JAVAC.", file=sys.stderr)
+    return ""
 
 
 def extract(z: zipfile.ZipFile, name: str, dest: Path) -> None:
@@ -62,8 +79,8 @@ def main() -> int:
     if not PROOF_SRC.exists():
         print(f"missing {PROOF_SRC}", file=sys.stderr)
         return 1
-    if not JAVAC.exists():
-        print(f"missing javac at {JAVAC}", file=sys.stderr)
+    javac = find_javac()
+    if not javac:
         return 1
 
     with zipfile.ZipFile(FAT_JAR) as outer:
@@ -83,7 +100,7 @@ def main() -> int:
     if classes.exists():
         shutil.rmtree(classes)
     classes.mkdir()
-    cp = ";".join(
+    cp = os.pathsep.join(
         [
             str(WORK / "jackson-annotations.jar"),
             str(WORK / "jakarta.validation-api.jar"),
@@ -91,7 +108,7 @@ def main() -> int:
         ]
     )
     cmd = [
-        str(JAVAC),
+        javac,
         "-encoding",
         "UTF-8",
         "--release",
@@ -125,10 +142,10 @@ def main() -> int:
     if proof_classes.exists():
         shutil.rmtree(proof_classes)
     proof_classes.mkdir()
-    proof_cp = ";".join([str(boot_classes), str(core_dir), *(str(jar) for jar in proof_jars)])
+    proof_cp = os.pathsep.join([str(boot_classes), str(core_dir), *(str(jar) for jar in proof_jars)])
     subprocess.check_call(
         [
-            str(JAVAC),
+            javac,
             "-encoding",
             "UTF-8",
             "--release",
@@ -158,7 +175,7 @@ def main() -> int:
     service_cp = os.pathsep.join([str(classes), str(boot_classes), str(libs / "*")])
     subprocess.check_call(
         [
-            str(JAVAC),
+            javac,
             "-encoding",
             "UTF-8",
             "--release",
@@ -217,5 +234,56 @@ def main() -> int:
     return 0
 
 
+def wait_healthy(container: str, timeout: int = 240) -> None:
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        proc = subprocess.run(
+            [
+                "docker",
+                "inspect",
+                "-f",
+                "{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}",
+                container,
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        status = (proc.stdout or "").strip()
+        if status == "healthy":
+            print(f"{container} is healthy")
+            return
+        if status in {"exited", "dead"}:
+            raise SystemExit(f"{container} is {status}")
+        time.sleep(5)
+    raise SystemExit(f"Timed out waiting for {container} to become healthy")
+
+
+def install(container: str) -> int:
+    """Copy the image jar out, patch it, and restart that container only."""
+    WORK.mkdir(parents=True, exist_ok=True)
+    print(f"Waiting for {container} before copying the issuer jar")
+    wait_healthy(container)
+    subprocess.check_call(["docker", "cp", f"{container}:{JAR_IN_CONTAINER}", str(FAT_JAR)])
+    code = main()
+    if code != 0:
+        return code
+    patched = WORK / "certify-service-patched.jar"
+    subprocess.check_call(["docker", "cp", str(patched), f"{container}:{JAR_IN_CONTAINER}"])
+    subprocess.check_call(["docker", "restart", container])
+    wait_healthy(container)
+    return 0
+
+
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Patch the Certify 1.0 issuer jar for the OID4VCI plan")
+    parser.add_argument(
+        "--install",
+        action="store_true",
+        help="Copy the jar from the running Certify container, patch it, and restart that container",
+    )
+    parser.add_argument("--container", default=os.environ.get("CERTIFY_CONTAINER", DEFAULT_CONTAINER))
+    args = parser.parse_args()
+    if args.install:
+        raise SystemExit(install(args.container))
     raise SystemExit(main())
