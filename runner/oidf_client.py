@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import re
+import threading
 import time
 from pathlib import Path
 from typing import Any, Optional
@@ -48,6 +49,10 @@ class OidfClient:
         if transport is not None:
             client_kwargs["transport"] = transport
         self._client = httpx.Client(**client_kwargs)
+        # One alias can have one active test. Overlapping starts make stop()
+        # call setStatus(INTERRUPTED) twice, which the suite returns as HTTP 409.
+        self._start_lock = threading.Lock()
+        self._active_test: dict[str, str] = {}
 
     def close(self) -> None:
         self._client.close()
@@ -104,7 +109,53 @@ class OidfClient:
         params = {"test": test_module, "plan": plan_id}
         if variant:
             params["variant"] = json.dumps(variant)
-        return self._request("POST", "api/runner", params=params).json()
+        with self._start_lock:
+            previous = self._active_test.get(plan_id)
+            if previous:
+                self._ensure_stopped(previous)
+            delay = 1.0
+            response: Optional[httpx.Response] = None
+            for attempt in range(4):
+                response = self._client.request("POST", "api/runner", params=params)
+                if response.status_code < 400:
+                    body = response.json()
+                    test_id = body.get("id") or body.get("testId")
+                    if isinstance(test_id, str) and test_id:
+                        self._active_test[plan_id] = test_id
+                    return body
+                if response.status_code == 409 and "INTERRUPTED" in response.text and attempt < 3:
+                    if previous:
+                        self._ensure_stopped(previous)
+                    time.sleep(delay)
+                    delay *= 2
+                    continue
+                break
+        assert response is not None
+        raise ConformanceError(
+            f"POST api/runner failed HTTP {response.status_code}: {response.text[:500]}"
+        )
+
+    def _ensure_stopped(self, test_id: str) -> None:
+        """Leave the alias's current test in a terminal state before the next start.
+
+        createTestAlias always calls stop(). stop() calls setStatus(INTERRUPTED)
+        unless the test is already FINISHED or INTERRUPTED. A second call is HTTP 409.
+        """
+        deadline = time.time() + 20
+        cancelled = False
+        while time.time() < deadline:
+            info = self._client.get(f"api/info/{test_id}")
+            if info.status_code == 404:
+                return
+            if info.status_code >= 400:
+                return
+            status = (info.json().get("status") or "").upper()
+            if status in {"FINISHED", "INTERRUPTED"}:
+                return
+            if not cancelled:
+                self._client.request("DELETE", f"api/runner/{test_id}")
+                cancelled = True
+            time.sleep(0.5)
 
     def get_info(self, test_id: str) -> dict:
         return self._request("GET", f"api/info/{test_id}").json()

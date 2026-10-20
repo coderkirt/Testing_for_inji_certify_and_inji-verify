@@ -93,7 +93,10 @@ $Runner = @(
     "--suite-url", $env:CONFORMANCE_SERVER
 )
 if ($Combined) { $Runner += "--combined" } else { $Runner += @("--component", $Component) }
-if ($Parallel) { $Runner += "--parallel" }
+if ($Parallel) {
+    # The suite returns HTTP 409 if two tests on one alias are interrupted together.
+    Write-Host "Ignoring -Parallel; modules run one at a time to avoid HTTP 409."
+}
 if ($OfficialScript) { $Runner += @("--official-script", $OfficialScript) }
 if ($DiffAgainst) { $Runner += @("--diff-against", $DiffAgainst) }
 
