@@ -16,7 +16,7 @@ import os
 import subprocess
 import sys
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
@@ -111,11 +111,18 @@ def map_result(raw: str, expected_failure: bool, skipped: bool) -> str:
 
 def evaluate_benchmark(summary: dict[str, Any], benchmark: dict[str, Any]) -> tuple[bool, list[str]]:
     reasons: list[str] = []
-    total = max(summary.get("total", 0), 1)
-    pass_rate = summary.get("passed", 0) / total
+    passed = summary.get("passed", 0)
+    failed = summary.get("failed", 0)
+    attempted = passed + failed
     min_rate = float(benchmark.get("minPassRate", 1.0))
-    if pass_rate + 1e-9 < min_rate:
-        reasons.append(f"pass rate {pass_rate:.2%} < minPassRate {min_rate:.2%}")
+    # Expected skips are documented gaps. They stay in the report, but they do
+    # not pull a clean run under the pass-rate gate.
+    if attempted == 0:
+        reasons.append("no module passed or failed")
+    else:
+        pass_rate = passed / attempted
+        if pass_rate + 1e-9 < min_rate:
+            reasons.append(f"pass rate {pass_rate:.2%} < minPassRate {min_rate:.2%}")
     if benchmark.get("failOnUnexpectedFailure", True) and summary.get("unexpectedFailures", 0):
         reasons.append(f"{summary['unexpectedFailures']} unexpected failure(s)")
     if benchmark.get("failOnUnexpectedSkip") and summary.get("unexpectedSkips", 0):
@@ -386,7 +393,25 @@ def execute_plan(
                 "expectedSkip": True,
                 "reason": "listed in expected-skips.json",
             }
-        started = client.start_module(plan_id, name, module_variant)
+        try:
+            started = client.start_module(plan_id, name, module_variant)
+        except ConformanceError as exc:
+            expected = key in expected_failures or name in expected_failures
+            print(f"Module {name} could not be started: {exc}")
+            return {
+                "testModule": name,
+                "variant": module_variant,
+                "testId": None,
+                "status": "INTERRUPTED",
+                "result": "FAILED",
+                "mapped": map_result("FAILED", expected, False),
+                "expectedFailure": expected,
+                "expectedSkip": False,
+                "reason": (
+                    expected_failures.get(key) or expected_failures.get(name)
+                    or f"suite rejected module start: {exc}"
+                ),
+            }
         test_id = started.get("id") or started.get("testId")
         waiting = None
         repeat_waiting = False
@@ -452,16 +477,14 @@ def execute_plan(
             "reason": expected_failures.get(key) or expected_failures.get(name),
         }
 
+    # One plan has one alias. The suite interrupts that alias's current test
+    # when the next module starts, and a second interrupt of an already
+    # INTERRUPTED test is HTTP 409. Modules in a plan therefore run one at a time.
+    # --parallel still overlaps the Certify plan with the Verify plan.
+    _ = parallel_modules
     results: list[dict[str, Any]] = []
-    if parallel_modules and len(modules) > 1:
-        with ThreadPoolExecutor(max_workers=min(4, len(modules))) as pool:
-            futures = {pool.submit(run_one, module): module for module in modules}
-            for future in as_completed(futures):
-                results.append(future.result())
-        results.sort(key=lambda item: item["testModule"] or "")
-    else:
-        for module in modules:
-            results.append(run_one(module))
+    for module in modules:
+        results.append(run_one(module))
 
     export = client.export_html(plan_id, export_dir / component)
     return {
@@ -519,7 +542,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--benchmark", type=Path, default=CONFIG_DIR / "benchmark.json")
     parser.add_argument("--diff-against", type=Path)
     parser.add_argument("--official-script", type=Path, help="Optional path to official run-test-plan.py")
-    parser.add_argument("--parallel", action="store_true", help="Run certify+verify plans and modules concurrently")
+    parser.add_argument("--parallel", action="store_true", help="Run certify and verify plans at the same time. Modules inside one plan stay sequential.")
     parser.add_argument("--module-timeout", type=int, default=int(os.environ.get("OIDF_MODULE_TIMEOUT", "600")))
     parser.add_argument("--skip-wait", action="store_true")
     return parser.parse_args()
@@ -621,7 +644,10 @@ def main() -> int:
 
     results_path = args.output_dir / "results.json"
     results_path.write_text(json.dumps(document, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps({"summary": summary, "benchmarkMet": met, "reasons": reasons, "results": str(results_path)}, indent=2))
+    from results_page import write_results_page
+
+    page = write_results_page(results_path)
+    print(json.dumps({"summary": summary, "benchmarkMet": met, "reasons": reasons, "results": str(results_path), "page": str(page)}, indent=2))
     return 0 if met else 1
 
 
