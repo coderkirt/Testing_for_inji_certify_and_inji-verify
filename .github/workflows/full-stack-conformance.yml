@@ -42,6 +42,11 @@ jobs:
       - name: Install runner dependencies
         run: pip install -r runner/requirements.txt
 
+      - name: Run unit tests and SD-JWT verification
+        run: |
+          python -m unittest discover tests -v
+          python runner/sd_jwt_verifier.py --self-test
+
       - name: Start stack
         run: |
           cp compose/.env.example compose/.env

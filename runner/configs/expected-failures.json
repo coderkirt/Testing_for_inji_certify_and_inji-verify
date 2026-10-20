@@ -11,6 +11,8 @@
     "oid4vp-1final-verifier-invalid-kb-jwt-nonce": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)",
     "oid4vp-1final-verifier-invalid-kb-jwt-aud": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)",
     "oid4vp-1final-verifier-kb-jwt-iat-in-past": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)",
-    "oid4vp-1final-verifier-kb-jwt-iat-in-future": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)"
+    "oid4vp-1final-verifier-kb-jwt-iat-in-future": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)",
+    "oid4vp-1final-verifier-present-revoked-credential": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (Bitstring Status List revocation check not supported in draft 21)",
+    "oid4vp-1final-verifier-present-credential-without-status": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (Bitstring Status List revocation check not supported in draft 21)"
   }
 }

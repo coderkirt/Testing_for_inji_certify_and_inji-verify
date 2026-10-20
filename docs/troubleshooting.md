@@ -34,7 +34,7 @@ Certify 1.0 compares offer claims to `credential_metadata.claims` in `/.well-kno
 
 ## Credential endpoint HTTP 500
 
-Suite 5.3.1 adds a random JSON field to the credential request, and its wallet proof sets `iss` to the static client id. Certify 1.0.0-alpha.1 rejects unknown JSON fields and rejects that `iss` because pre-authorized access tokens are minted with an empty `client_id`. A fresh `run-conformance` compose start, including GitHub Actions, runs `python scripts/patch-certify-ignore-unknown.py --install`, which copies the jar out, patches it, and restarts only the `certify` container. `-SkipCompose` leaves an already patched container alone. The sources are under `compose/certify/patch/`.
+Suite 5.3.1 adds a random JSON field to the credential request, and its wallet proof sets `iss` to the static client id. Certify 1.0.0-alpha.1 rejects unknown JSON fields and rejects that `iss` because pre-authorized access tokens are minted with an empty `client_id`. After `compose up`, run `python scripts/patch-certify-ignore-unknown.py` and copy the patched JAR into the `certify` container. Restart `certify` after copying. The sources are `compose/certify/patch/CredentialRequest.java` and `compose/certify/patch/JwtProofValidator.java`.
 
 Issuer plans must use `fapi_profile: vci` (not `plain_fapi`). `plain_fapi` skips credential-issuer metadata, so the suite sends `credential_configuration_id: null` and no proofs.
 

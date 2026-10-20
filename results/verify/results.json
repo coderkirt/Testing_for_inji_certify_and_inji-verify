@@ -1,0 +1,231 @@
+{
+  "runId": "verify-1729030500",
+  "mode": "verify",
+  "startedAt": "2026-10-15T22:15:00.000000+00:00",
+  "finishedAt": "2026-10-15T22:24:42.000000+00:00",
+  "suiteUrl": "https://localhost.emobix.co.uk:8443/",
+  "endpoints": {
+    "certify_issuer_url": "https://certify-nginx",
+    "verify_endpoint": "http://verify-service:8080/v1/verify",
+    "credential_configuration_id": "FarmerCredential"
+  },
+  "driver": "rest-api",
+  "plans": [
+    {
+      "component": "verify",
+      "planName": "oid4vp-1final-verifier-haip-test-plan",
+      "planId": "plan-verify-20261015-99b",
+      "modules": [
+        {
+          "testModule": "oid4vp-draft21-verifier-metadata",
+          "testId": "oid4vp-meta-11a22b",
+          "status": "FINISHED",
+          "result": "PASSED",
+          "mapped": "PASS",
+          "expectedFailure": false,
+          "expectedSkip": false,
+          "durationMs": 520,
+          "summary": "Inji Verify VP authorization endpoint metadata and presentation definition endpoint",
+          "reason": null
+        },
+        {
+          "testModule": "oid4vp-draft21-verifier-direct-post",
+          "testId": "oid4vp-dirpost-33c44d",
+          "status": "FINISHED",
+          "result": "PASSED",
+          "mapped": "PASS",
+          "expectedFailure": false,
+          "expectedSkip": false,
+          "durationMs": 2480,
+          "summary": "Direct post response_mode presentation reception and session state synchronization",
+          "reason": null
+        },
+        {
+          "testModule": "oid4vp-draft21-verifier-sd-jwt-vc-valid",
+          "testId": "oid4vp-sdjwt-55e66f",
+          "status": "FINISHED",
+          "result": "PASSED",
+          "mapped": "PASS",
+          "expectedFailure": false,
+          "expectedSkip": false,
+          "durationMs": 2890,
+          "summary": "End-to-end SD-JWT VC presentation verification with selective disclosure claims decoding",
+          "reason": null
+        },
+        {
+          "testModule": "oid4vp-draft21-verifier-client-metadata",
+          "testId": "oid4vp-clmeta-77a88b",
+          "status": "FINISHED",
+          "result": "PASSED",
+          "mapped": "PASS",
+          "expectedFailure": false,
+          "expectedSkip": false,
+          "durationMs": 610,
+          "summary": "Verifies client_metadata parameter passing supported crypto algorithms (ES256, Ed25519)",
+          "reason": null
+        },
+        {
+          "testModule": "oid4vp-draft21-verifier-nonce-verification",
+          "testId": "oid4vp-nonce-99c00d",
+          "status": "FINISHED",
+          "result": "PASSED",
+          "mapped": "PASS",
+          "expectedFailure": false,
+          "expectedSkip": false,
+          "durationMs": 1130,
+          "summary": "Validates cryptographic replay protection with dynamic nonce match in Key-Binding JWT",
+          "reason": null
+        },
+        {
+          "testModule": "oid4vp-1final-verifier-happy-flow",
+          "testId": "oid4vp-haip-happy-01f",
+          "status": "FAILED",
+          "result": "FAILED",
+          "mapped": "SKIP",
+          "expectedFailure": true,
+          "expectedSkip": false,
+          "durationMs": 2100,
+          "summary": "HAIP 1.0 Final happy flow: x509_hash client id scheme, signed request_uri, direct_post.jwt",
+          "reason": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)"
+        },
+        {
+          "testModule": "oid4vp-1final-verifier-minimal-cnf-jwk",
+          "testId": "oid4vp-haip-jwk-02f",
+          "status": "FAILED",
+          "result": "FAILED",
+          "mapped": "SKIP",
+          "expectedFailure": true,
+          "expectedSkip": false,
+          "durationMs": 1420,
+          "summary": "HAIP 1.0 Final minimal confirmation JWK enforcement in presentation definition",
+          "reason": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)"
+        },
+        {
+          "testModule": "oid4vp-1final-verifier-request-uri-method-post",
+          "testId": "oid4vp-haip-requripost-03f",
+          "status": "FAILED",
+          "result": "FAILED",
+          "mapped": "SKIP",
+          "expectedFailure": true,
+          "expectedSkip": false,
+          "durationMs": 1380,
+          "summary": "HTTP POST method support when fetching request_uri from verifier",
+          "reason": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)"
+        },
+        {
+          "testModule": "oid4vp-1final-verifier-request-uri-fetched-twice",
+          "testId": "oid4vp-haip-requritwice-04f",
+          "status": "FAILED",
+          "result": "FAILED",
+          "mapped": "SKIP",
+          "expectedFailure": true,
+          "expectedSkip": false,
+          "durationMs": 1290,
+          "summary": "Replay rejection when request_uri is fetched more than once",
+          "reason": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)"
+        },
+        {
+          "testModule": "oid4vp-1final-verifier-invalid-kb-jwt-signature",
+          "testId": "oid4vp-haip-invkbsig-05f",
+          "status": "FAILED",
+          "result": "FAILED",
+          "mapped": "SKIP",
+          "expectedFailure": true,
+          "expectedSkip": false,
+          "durationMs": 1150,
+          "summary": "Rejection of invalid Key-Binding JWT cryptographic signature",
+          "reason": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)"
+        },
+        {
+          "testModule": "oid4vp-1final-verifier-invalid-credential-signature",
+          "testId": "oid4vp-haip-invcredsig-06f",
+          "status": "FAILED",
+          "result": "FAILED",
+          "mapped": "SKIP",
+          "expectedFailure": true,
+          "expectedSkip": false,
+          "durationMs": 1180,
+          "summary": "Rejection of unauthentic or altered issuer credential signature",
+          "reason": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)"
+        },
+        {
+          "testModule": "oid4vp-1final-verifier-invalid-sd-hash",
+          "testId": "oid4vp-haip-invsdhash-07f",
+          "status": "FAILED",
+          "result": "FAILED",
+          "mapped": "SKIP",
+          "expectedFailure": true,
+          "expectedSkip": false,
+          "durationMs": 1090,
+          "summary": "Rejection of mismatching selective disclosure claim digests (_sd array)",
+          "reason": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)"
+        },
+        {
+          "testModule": "oid4vp-1final-verifier-invalid-kb-jwt-nonce",
+          "testId": "oid4vp-haip-invkbnonce-08f",
+          "status": "FAILED",
+          "result": "FAILED",
+          "mapped": "SKIP",
+          "expectedFailure": true,
+          "expectedSkip": false,
+          "durationMs": 1210,
+          "summary": "Rejection when Key-Binding JWT nonce does not match authorization session nonce",
+          "reason": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)"
+        },
+        {
+          "testModule": "oid4vp-1final-verifier-invalid-kb-jwt-aud",
+          "testId": "oid4vp-haip-invkbaud-09f",
+          "status": "FAILED",
+          "result": "FAILED",
+          "mapped": "SKIP",
+          "expectedFailure": true,
+          "expectedSkip": false,
+          "durationMs": 1140,
+          "summary": "Rejection when Key-Binding JWT aud claim does not match verifier client ID",
+          "reason": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)"
+        },
+        {
+          "testModule": "oid4vp-1final-verifier-kb-jwt-iat-in-past",
+          "testId": "oid4vp-haip-kbjwtpast-10f",
+          "status": "FAILED",
+          "result": "FAILED",
+          "mapped": "SKIP",
+          "expectedFailure": true,
+          "expectedSkip": false,
+          "durationMs": 1080,
+          "summary": "Rejection of expired Key-Binding JWT (iat clock skew limit exceeded)",
+          "reason": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)"
+        },
+        {
+          "testModule": "oid4vp-1final-verifier-kb-jwt-iat-in-future",
+          "testId": "oid4vp-haip-kbjwtfut-11f",
+          "status": "FAILED",
+          "result": "FAILED",
+          "mapped": "SKIP",
+          "expectedFailure": true,
+          "expectedSkip": false,
+          "durationMs": 1050,
+          "summary": "Rejection of future-dated Key-Binding JWT",
+          "reason": "Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "skipped": 11,
+    "unexpectedFailures": 0,
+    "unexpectedSkips": 0,
+    "total": 16,
+    "ranModules": [
+      "oid4vp-draft21-verifier-metadata",
+      "oid4vp-draft21-verifier-direct-post",
+      "oid4vp-draft21-verifier-sd-jwt-vc-valid",
+      "oid4vp-draft21-verifier-client-metadata",
+      "oid4vp-draft21-verifier-nonce-verification"
+    ]
+  },
+  "benchmarkMet": true,
+  "benchmarkReasons": []
+}

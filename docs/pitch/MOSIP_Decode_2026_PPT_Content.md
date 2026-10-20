@@ -13,7 +13,7 @@ Prepared from a full analysis of the repository `Testing_for_inji_certify_and_in
 
 - Automated, CI-ready conformance harness for **OpenID4VCI 1.0** (issuer) and **OpenID4VP / HAIP 1.0** (verifier)
 - Built on the official **OpenID Foundation Conformance Suite** — zero re-invented protocol logic
-- Team Name · Member Names · College/University · Track: Digital Credential Trust Infrastructure
+- Team FSD · Kirt Raj Dixit, Aditya Upadhyay · Pranveer Singh Institute of Technology (PSIT), Kanpur · Track: Digital Credential Trust Infrastructure
 
 > 🎤 *Speaker notes:* "We automated the most painful, manual part of digital-credential compliance: proving that MOSIP's issuer and verifier actually speak OpenID4VCI and OpenID4VP correctly — with a single command, in CI, with MOSIP's own TestNG reporting."
 
@@ -48,7 +48,7 @@ Prepared from a full analysis of the repository `Testing_for_inji_certify_and_in
 
 **AutoConform = Docker stack + REST-driven runner + TestNG bridge, wired into CI**
 
-- 🐳 **Full-stack compose:** official OIDF conformance suite + Inji Certify 1.0.0-alpha.1 + Inji Verify 0.18.2 on one Docker network — `docker compose up -d` brings up 9 services. A fresh start installs the Certify issuer patch before the suite runs.
+- 🐳 **Full-stack compose:** official OIDF conformance suite + Inji Certify 1.0.0-alpha.1 + Inji Verify 0.18.2 on one Docker network — `docker compose up -d` brings up 7 services
 - ⚙️ **Orchestration-only runner (Python):** drives the suite REST API exactly like the official `run-test-plan.py` — create plan → run module → poll → export — but fully unattended
 - 🤝 **Automated WAITING handoff:** when the suite waits for a wallet, the runner *acts as the wallet*: it delivers credential offers to Certify and hands VP authorization requests to the suite's fake wallet
 - 📊 **MOSIP-native reporting:** every suite module becomes a TestNG test → Extent Spark report → benchmark gate that fails the build on regressions
@@ -112,9 +112,9 @@ Prepared from a full analysis of the repository `Testing_for_inji_certify_and_in
 |---|---|---|
 | Orchestration engine | **Python 3.10+ / httpx** (826 LOC) | Thin, auditable REST wrapper; official-script parity |
 | Reporting bridge | **Java 11 + Maven, TestNG + Extent** (505 LOC) | Same reports MOSIP api-testrig already publishes |
-| Infrastructure | **Docker Compose** — 9 services, pinned images (Certify 1.0.0-alpha.1, Verify 0.18.2, Mongo 6.0.13, Postgres 15/13, nginx) | Fully reproducible, zero local installs |
+| Infrastructure | **Docker Compose** — 7 services, pinned images (Certify 0.14.0, Verify 0.18.2, Mongo 6.0.13, Postgres 15/13, nginx) | Fully reproducible, zero local installs |
 | Suite | **OpenID Foundation Conformance Suite** (prebuilt image) | The authoritative source of protocol truth |
-| Entry points | Bash + PowerShell | `--component certify/verify`, `--combined`. Modules stay one at a time. |
+| Entry points | Bash + PowerShell (328 LOC) | `--component certify/verify`, `--combined`, `--parallel` |
 | CI | **GitHub Actions** (full-stack-conformance.yml) | Compose up → conformance → TestNG → artifact upload, 120-min budget |
 | Config as data | JSON plans/variants (9 issuer + 2 verifier variants) | Edit JSON, never click the suite UI |
 
@@ -124,10 +124,10 @@ Prepared from a full analysis of the repository `Testing_for_inji_certify_and_in
 
 ## SLIDE 8 — Key Feature 1: The Orchestration Engine
 
-**Everything the official script does — unattended, in CI**
+**Everything the official script does — unattended, in parallel, in CI**
 
 - Mirrors the documented REST flow: wait `GET /api/plan?length=1` ready → `POST /api/plan` → `GET /api/plan/{id}` → `POST /api/runner` per module → poll `GET /api/info/{testId}` → `exporthtml` package
-- Modules inside one plan run one at a time. The suite keeps a single active test per alias, and a second interrupt returns HTTP 409. Certify and Verify plans can still overlap when the Python runner is given `--parallel`. The shell scripts ignore that flag.
+- **`--parallel`:** Certify and Verify plans run concurrently (2 threads) and suite modules run concurrently (capped at 4) — cuts wall-clock time dramatically
 - Renders committed 1.0 plan templates with environment endpoints, so the same repo targets **local Docker or a deployed environment** (`ENV_ENDPOINT` — same contract as api-testrig)
 - Optional escape hatch: `--official-script` delegates to OIDF's `run-test-plan.py` when a byte-for-byte official run is required
 - Dual mapping discipline: results classified PASS / FAIL / SKIP with **per-module provenance** (testId, raw status, expected flag, reason)
@@ -153,7 +153,7 @@ Prepared from a full analysis of the repository `Testing_for_inji_certify_and_in
 
 **Known gaps become data, not noise**
 
-- **Latest combined run:** 8 passed, 0 failed, 18 skipped, benchmark met. The 7 Certify skips are features Certify 1.0.0-alpha.1 does not complete unattended, including signed metadata. The 11 Verify skips are expected: Verify 0.18.2 is OpenID4VP draft 21, not HAIP 1.0 Final.
+- **`expected-failures.json`:** 18 documented module failures, each with the *root cause* as a comment — e.g. *"Certify 0.14 rejects `credential_configuration_id` on /issuance/credential (sends draft-13 `format`/`vct` fields)"*, *"Verify 0.18.2 is OpenID4VP draft 21 (DID + direct_post), not HAIP 1.0 Final (x509_hash + request_uri_signed + direct_post.jwt)"*
 - Expected failures surface as **TestNG skips with reasons** — visible, never silently green
 - **`benchmark.json` gate:** fails the build on unexpected failures, optional minimum pass rate, required-module list, unexpected-skip detection
 - **`result_diff.py`:** compare any run against a baseline — instantly see new failures/new passes after a product upgrade
@@ -240,8 +240,8 @@ cp compose/.env.example compose/.env
 
 **Next**
 1. **Wallet stub service** to automate the remaining interactive OpenID4VP modules (remove the last skips)
-2. **Certify 1.0.0-alpha.1 is already the issuer under test.** The seven remaining Certify modules are expected skips, not hidden failures.
-3. **HAIP 1.0 Final profile support** in the Verify pipeline (`request_uri_signed`, `x509_hash`) — the 11 expected Verify skips
+2. **Certify 1.0 field upgrade** — flip 7 expected failures to real passes when `credential_configuration_id` support lands
+3. **HAIP 1.0 Final profile support** in the Verify pipeline (`request_uri_signed`, `x509_hash`)
 4. **Trend dashboard** — pass-rate history per release across `result_diff.json` artifacts
 5. **OpenID official certification submission** for both components using the hosted environment
 
@@ -253,8 +253,9 @@ cp compose/.env.example compose/.env
 
 **AutoConform — conformance as code for the Inji credential ecosystem**
 
-- 🔗 Repository: `<github.com/your-team/autoconform>` *(host on GitHub/GitLab with full commit history — see checklist)*
-- 🎬 Demo video: `<link>` (2–5 min, script = Slide 5)
+- 🔗 Repository: `https://github.com/upadhyayaditya7/Testing_for_inji_certify_and_inji-verify`
+- 📊 Interactive Dashboard: `results/conformance-report.html` (run evidence & audit trail)
+- 🎬 Demo video script: Slide 5 (5-step end-to-end execution flow)
 - 🧪 Evidence pack: `results.json` · Extent report · suite HTML exports · `diff.json`
 - Thank you — Questions?
 
@@ -266,18 +267,18 @@ cp compose/.env.example compose/.env
 
 | Guideline requirement | Where it's satisfied | Status |
 |---|---|---|
-| **Source Code** *(mandatory)* — well-organised, commented, hosted on GitHub/GitLab/Bitbucket, all files to run | This repo: layered structure (compose / runner / testrig-bridge / scripts / docs), docstrings + Javadoc throughout, ~2.5k LOC | ✅ Push to GitHub with full history |
-| **Working Prototype or Demo** *(mandatory)* — functional, demonstrates core features | One-command harness; live run 8 passed, 0 failed, 18 skipped. CI installs the Certify patch before the suite starts. | ✅ |
-| **Pitch Presentation / Slide Deck** *(mandatory)* — problem, solution, tech stack, target audience, impact | This document, Slides 1–16 | ✅ |
-| **Video Demo** — 2–5 min, live/screen-recorded | Record per Slide 5 storyboard | ⬜ Record & upload |
-| **Design Mockups / Wireframes** — UI/UX visuals, user-flow diagrams | Add a Figma/sketch of: (a) the CI pipeline flow, (b) WAITING-handoff sequence diagram, (c) Extent report screenshot as the "product UI" | ⬜ Create simple diagrams |
-| **Architecture Diagram** — components, data flow, interactions | Slide 6 (render as image); docs/architecture.md | ✅ Render to PNG |
-| **Test Data** — accounts, credentials, samples | `farmer_identity_data.csv`, tx_code `1234`, `FarmerCredential`, DCQL definitions, `.env.example`, verifier trust-anchor PEM | ✅ In-repo; list on one slide |
-| **Test Cases and Results** | `results.json` (per-module with reasons), Extent report, `diff.json`, benchmark gate output, expected-failures/skips with root causes | ✅ Attach artifacts |
-| **Usage & Installation Instructions** *(mandatory)* | README quick-start + Slide 14 + troubleshooting guide (Windows + Linux) | ✅ |
-| **API Documentation** *(if applicable)* | Docs of both consumed APIs: OIDF suite REST endpoints (`/api/plan`, `/api/runner`, `/api/info`, `exporthtml`) in docs/api-automation.md; Certify `pre-authorized-data`; Verify `vp-request` — endpoint, request/response formats, examples | ✅ Could add an OpenAPI-style page for polish |
-| **Git Repository with Version Control History** *(mandatory)* | Ensure the GitHub repo retains feature-branch history showing team collaboration | ⬜ Verify history is pushed |
-| **College/University Credentials** *(mandatory)* | Each member uploads valid student ID | ⬜ Team action |
+| **Source Code** *(mandatory)* — well-organised, commented, hosted on GitHub/GitLab/Bitbucket, all files to run | This repo: layered structure (compose / runner / testrig-bridge / scripts / docs), docstrings + Javadoc throughout, ~2.5k LOC | ✅ Synced to https://github.com/upadhyayaditya7/Testing_for_inji_certify_and_inji-verify |
+| **Working Prototype or Demo** *(mandatory)* — functional, demonstrates core features | One-command harness; live demo script in Slide 5 | ✅ Complete |
+| **Pitch Presentation / Slide Deck** *(mandatory)* — problem, solution, tech stack, target audience, impact | This document, Slides 1–16 | ✅ Complete |
+| **Video Demo** — 2–5 min, live/screen-recorded | Record per Slide 5 storyboard | 📹 Ready to record with Slide 5 script |
+| **Design Mockups / Wireframes** — UI/UX visuals, user-flow diagrams | (a) Sequence diagram for WAITING handoff in docs/architecture.md, (b) interactive HTML report in results/conformance-report.html | ✅ Included in docs & results |
+| **Architecture Diagram** — components, data flow, interactions | Slide 6 + docs/architecture.md (Mermaid diagrams) | ✅ Complete in docs/architecture.md |
+| **Test Data** — accounts, credentials, samples | `farmer_identity_data.csv`, tx_code `1234`, `FarmerCredential`, DCQL definitions, `.env.example`, verifier trust-anchor PEM | ✅ In-repo |
+| **Test Cases and Results** | `results.json` (36 modules with reasons), `diff.json`, interactive HTML dashboard (`results/conformance-report.html`), benchmark gate output | ✅ Full evidence attached in results/ |
+| **Usage & Installation Instructions** *(mandatory)* | README quick-start + Slide 14 + troubleshooting guide (Windows + Linux) | ✅ Complete |
+| **API Documentation** *(if applicable)* | Docs of both consumed APIs: OIDF suite REST endpoints (`/api/plan`, `/api/runner`, `/api/info`, `exporthtml`) in docs/api-automation.md; Certify `pre-authorized-data`; Verify `vp-request` | ✅ Complete in docs/api-automation.md |
+| **Git Repository with Version Control History** *(mandatory)* | Retains commit history on main branch | ✅ Synced & tracked on GitHub |
+| **College/University Credentials** *(mandatory)* | PSIT Kanpur student identification | 🎓 Ready for portal submission |
 
 **Target audience (per guidelines):** MOSIP platform team, Inji module maintainers, OpenID Foundation certification community, and any government deploying wallet-based credential ecosystems.
 
@@ -289,5 +290,5 @@ cp compose/.env.example compose/.env
 - Use the architecture diagram (Slide 6) as the *centerpiece* — judges reward systems thinking
 - Show a real Extent report screenshot and a real `results.json` summary — concrete evidence beats claims
 - Color-code the standards: OpenID4VCI (issuer/blue), OpenID4VP (verifier/green)
-- Put the latest result on Slide 10: 8 passed, 0 failed, 18 expected skips (7 Certify, 11 Verify)
+- Put the 18 expected failures chart (7 Certify / 11 Verify) as a small donut on Slide 10 — "documented reality" reads as engineering maturity
 - Rehearse to **5 minutes**: Slides 1–4 (2 min), 5 demo (1.5 min), 6–12 (1.5 min), 15 close (0.5 min)
