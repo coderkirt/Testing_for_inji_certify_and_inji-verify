@@ -50,7 +50,10 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     --parallel)
-      PARALLEL=1
+      # Accepted for compatibility. Module starts stay serialized: the suite
+      # returns HTTP 409 if two tests on one alias are interrupted together.
+      PARALLEL=0
+      echo "Ignoring --parallel; modules run one at a time to avoid HTTP 409." >&2
       shift
       ;;
     --official-script)
@@ -141,9 +144,24 @@ export VERIFY_ENDPOINT="${VERIFY_ENDPOINT:-http://verify-service:8080/v1/verify}
 OUT_DIR="${ROOT}/results/${MODE}"
 mkdir -p "${OUT_DIR}"
 
-PYTHON_BIN="${PYTHON:-python3}"
-if ! command -v "${PYTHON_BIN}" >/dev/null 2>&1; then
-  PYTHON_BIN="python"
+python_works() {
+  command -v "$1" >/dev/null 2>&1 && "$1" -c 'import sys' >/dev/null 2>&1
+}
+
+PYTHON_BIN=""
+if [[ -n "${PYTHON:-}" ]] && python_works "${PYTHON}"; then
+  PYTHON_BIN="${PYTHON}"
+else
+  for candidate in python python3; do
+    if python_works "${candidate}"; then
+      PYTHON_BIN="${candidate}"
+      break
+    fi
+  done
+fi
+if [[ -z "${PYTHON_BIN}" ]]; then
+  echo "Python 3.10+ is required. The Windows Store python alias is not an interpreter." >&2
+  exit 1
 fi
 
 RUNNER_CMD=("${PYTHON_BIN}" "${ROOT}/runner/run_conformance.py" --output-dir "${OUT_DIR}" --suite-url "${CONFORMANCE_SERVER}")
