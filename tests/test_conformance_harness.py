@@ -61,11 +61,14 @@ class TestBenchmarkEvaluation(unittest.TestCase):
         summary = {
             "total": 10,
             "passed": 3,
-            "failed": 0,
-            "skipped": 7,
+            "failed": 7,
+            "skipped": 0,
             "unexpectedFailures": 0,
         }
-        benchmark = {"minPassRate": 0.50}
+        benchmark = {
+            "minPassRate": 0.50,
+            "failOnUnexpectedFailure": False,
+        }
         met, reasons = evaluate_benchmark(summary, benchmark)
         self.assertFalse(met)
         self.assertTrue(any("pass rate" in r for r in reasons))
