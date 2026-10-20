@@ -160,5 +160,24 @@ class TestConfigRendering(unittest.TestCase):
         self.assertEqual(mapping["CERTIFY_CREDENTIAL_CONFIGURATION_ID"], "MyCred")
 
 
+class TestEvidenceIntegrity(unittest.TestCase):
+    def test_results_json_structure_and_benchmark(self):
+        results_file = ROOT / "results" / "results.json"
+        self.assertTrue(results_file.exists(), "results.json must exist")
+        data = json.loads(results_file.read_text(encoding="utf-8"))
+        self.assertTrue(data.get("benchmarkMet"), "Benchmark must be met in audited results")
+        summary = data.get("summary", {})
+        self.assertEqual(summary.get("unexpectedFailures"), 0)
+        self.assertEqual(summary.get("total"), 36)
+
+    def test_html_dashboard_artifact_exists(self):
+        dashboard_file = ROOT / "results" / "conformance-report.html"
+        self.assertTrue(dashboard_file.exists(), "conformance-report.html must exist")
+        html_content = dashboard_file.read_text(encoding="utf-8")
+        self.assertIn("AutoConform Conformance Evidence", html_content)
+        self.assertIn("drawer-overlay", html_content)
+
+
 if __name__ == "__main__":
     unittest.main()
+

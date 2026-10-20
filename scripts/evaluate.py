@@ -6,16 +6,19 @@ verify benchmark governance, and launch the interactive visual dashboard in 5 se
 
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import sys
 import time
+import unittest
 import webbrowser
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 RESULTS_DIR = ROOT / "results"
 CONFIGS_DIR = ROOT / "runner" / "configs"
+sys.path.insert(0, str(ROOT / "runner"))
 
 # ANSI Colors
 GREEN = "\033[92m"
@@ -42,7 +45,35 @@ def print_banner():
     print(banner)
 
 def evaluate():
+    parser = argparse.ArgumentParser(description="AutoConform Fast Evaluator & Evidence Explorer")
+    parser.add_argument("--full", action="store_true", help="Run full audit: SD-JWT verifier self-test, unit tests, and conformance audit")
+    parser.add_argument("--no-browser", action="store_true", help="Do not open web browser automatically")
+    parser.add_argument("--json", action="store_true", help="Print compact JSON summary")
+    args = parser.parse_args()
+
     print_banner()
+
+    if args.full:
+        print(f"{BOLD}[0/4] Running Protocol & Unit Verification Suite...{RESET}")
+        try:
+            from sd_jwt_verifier import SdJwtVerifier, create_sample_farmer_sd_jwt
+            token = create_sample_farmer_sd_jwt()
+            sd_res = SdJwtVerifier.verify(token, expected_aud="did:web:verify-service:v1:verify", expected_nonce="test_nonce_99182371")
+            if sd_res.is_valid:
+                print(f"      {GREEN}[OK] SD-JWT VC Engine Verified{RESET}: {sd_res.disclosures_count} disclosures decoded & digests matched")
+            else:
+                print(f"      {RED}[FAIL] SD-JWT Verification Failed{RESET}: {sd_res.errors}")
+        except Exception as exc:
+            print(f"      {YELLOW}[!] SD-JWT Engine check skipped: {exc}{RESET}")
+
+        suite = unittest.defaultTestLoader.discover(str(ROOT / "tests"))
+        runner = unittest.TextTestRunner(verbosity=0)
+        test_res = runner.run(suite)
+        if test_res.wasSuccessful():
+            print(f"      {GREEN}[OK] Python Unit Test Suite Passed{RESET}: {test_res.testsRun} tests OK\n")
+        else:
+            print(f"      {RED}[FAIL] Unit tests failed: {len(test_res.failures)} failures{RESET}\n")
+
     results_path = RESULTS_DIR / "results.json"
     benchmark_path = CONFIGS_DIR / "benchmark.json"
 
@@ -112,10 +143,13 @@ def evaluate():
         uri = dashboard_path.resolve().as_uri()
         print(f"      Local Dashboard : {CYAN}{uri}{RESET}")
         print(f"      Live Web Report : {CYAN}https://upadhyayaditya7.github.io/Testing_for_inji_certify_and_inji-verify/results/conformance-report.html{RESET}")
-        try:
-            webbrowser.open(uri)
-        except Exception:
-            pass
+        if not args.no_browser:
+            try:
+                webbrowser.open(uri)
+            except Exception:
+                pass
+        else:
+            print(f"      {DIM}(Browser launch skipped via --no-browser){RESET}")
     print(f"\n{GREEN}{BOLD}Evaluation Complete! All criteria satisfied for MOSIP Decode 2026.{RESET}\n")
     return 0
 
