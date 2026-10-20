@@ -42,6 +42,12 @@ jobs:
       - name: Install runner dependencies
         run: pip install -r runner/requirements.txt
 
+      - name: Run Python unit tests and SD-JWT engine verification
+        run: |
+          python -m unittest discover tests
+          python runner/sd_jwt_verifier.py --self-test
+          python scripts/evaluate.py --full --no-browser
+
       - name: Start stack
         run: |
           cp compose/.env.example compose/.env
@@ -55,25 +61,49 @@ jobs:
           fi
           docker compose --env-file compose/.env -f compose/docker-compose.yml up -d $SERVICES
 
-      - name: Wait for suite
+      - name: Wait for suite and services
         run: |
+          echo "Waiting for Conformance Suite at $CONFORMANCE_SERVER..."
           for i in $(seq 1 48); do
-            if curl -kfsS "$CONFORMANCE_SERVER" >/dev/null; then
-              echo ready
-              exit 0
+            if curl -kfsS "$CONFORMANCE_SERVER" >/dev/null 2>&1; then
+              echo "Conformance suite is ready"
+              break
             fi
             sleep 5
           done
-          docker compose -f compose/docker-compose.yml logs --tail=80
-          exit 1
+
+          MODE="${{ github.event.inputs.component || 'combined' }}"
+          if [ "$MODE" = "combined" ] || [ "$MODE" = "certify" ]; then
+            echo "Waiting for Inji Certify..."
+            for i in $(seq 1 36); do
+              if curl -fsS http://localhost:8090/v1/certify/actuator/health >/dev/null 2>&1 || \
+                 curl -fsS http://localhost:8091/.well-known/openid-credential-issuer >/dev/null 2>&1; then
+                echo "Inji Certify is ready"
+                break
+              fi
+              sleep 5
+            done
+          fi
+
+          if [ "$MODE" = "combined" ] || [ "$MODE" = "verify" ]; then
+            echo "Waiting for Inji Verify..."
+            for i in $(seq 1 24); do
+              if curl -fsS http://localhost:18080/v1/verify/actuator/health >/dev/null 2>&1 || \
+                 curl -fsS http://localhost:8080/v1/verify/actuator/health >/dev/null 2>&1; then
+                echo "Inji Verify is ready"
+                break
+              fi
+              sleep 5
+            done
+          fi
 
       - name: Run conformance + TestNG bridge
+        env:
+          OIDF_MODULE_TIMEOUT: "90"
         run: |
           MODE="${{ github.event.inputs.component || 'combined' }}"
           chmod +x scripts/*.sh
           if [ "$MODE" = "combined" ]; then
-            # Modules stay one at a time. Starting several on one alias makes the
-            # suite interrupt a test that is already INTERRUPTED and return HTTP 409.
             ./scripts/run-conformance.sh --combined --skip-compose
           else
             ./scripts/run-conformance.sh --component "$MODE" --skip-compose

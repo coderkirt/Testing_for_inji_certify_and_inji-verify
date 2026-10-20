@@ -1,0 +1,24 @@
+{
+  "regressions": [],
+  "fixes": [
+    {
+      "module": "certify::oid4vci-1_0-issuer-happy-flow",
+      "from": "FAIL",
+      "to": "PASS"
+    },
+    {
+      "module": "certify::oid4vci-1_0-issuer-dpop-proof-validation",
+      "from": "FAIL",
+      "to": "PASS"
+    }
+  ],
+  "added": [],
+  "removed": [],
+  "changedOther": [],
+  "summary": {
+    "previousModules": 36,
+    "currentModules": 36,
+    "regressions": 0,
+    "fixes": 2
+  }
+}

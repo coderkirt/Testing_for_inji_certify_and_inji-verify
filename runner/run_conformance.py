@@ -160,8 +160,8 @@ def run_official_script(
     return subprocess.call(cmd, cwd=str(official.parent))
 
 
-# The CSV plugin looks up column "id" using the access-token subject claim "sub".
-FARMER_CLAIMS = {"sub": "F001"}
+# Certify 1.0 dc+sd-jwt FarmerCredential has empty claims list in metadata; send {} to avoid unknown_claims.
+FARMER_CLAIMS: dict[str, str] = {}
 
 SD_JWT_PRESENTATION_DEFINITION = {
     "id": "inji-verify-conformance-sd-jwt",
@@ -185,12 +185,15 @@ def _safe_waiting(fn, client: OidfClient, test_id: str, info: dict[str, Any], ma
             return
         except Exception as exc:  # noqa: BLE001
             last_exc = exc
-            # Connection resets right after stack boot are common on slow CI
-            # machines; back off and try again before giving up.
-            wait = min(30.0, 2.0 * attempt)
+            # If the test was already interrupted, don't keep retrying
+            if "INTERRUPTED" in str(exc):
+                print(f"WAITING handoff aborted for {test_id}: test already INTERRUPTED")
+                raise ConformanceError(f"Test {test_id} was interrupted by suite: {exc}")
+            wait = min(15.0, 2.0 * attempt)
             print(f"WAITING handoff attempt {attempt}/{HANDOFF_RETRIES} failed for {test_id}: {exc} (retrying in {wait:.0f}s)")
             time.sleep(wait)
     print(f"WAITING handoff failed for {test_id}: {last_exc}")
+    raise ConformanceError(f"WAITING handoff failed after {HANDOFF_RETRIES} attempts: {last_exc}")
 
 
 def _exposed_value(info: dict[str, Any], key: str) -> Optional[str]:
@@ -542,8 +545,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--benchmark", type=Path, default=CONFIG_DIR / "benchmark.json")
     parser.add_argument("--diff-against", type=Path)
     parser.add_argument("--official-script", type=Path, help="Optional path to official run-test-plan.py")
-    parser.add_argument("--parallel", action="store_true", help="Run certify and verify plans at the same time. Modules inside one plan stay sequential.")
-    parser.add_argument("--module-timeout", type=int, default=int(os.environ.get("OIDF_MODULE_TIMEOUT", "600")))
+    parser.add_argument("--parallel", action="store_true", help="Run certify+verify plans and modules concurrently")
+    parser.add_argument("--module-timeout", type=int, default=int(os.environ.get("OIDF_MODULE_TIMEOUT", "90")))
     parser.add_argument("--skip-wait", action="store_true")
     return parser.parse_args()
 
