@@ -11,9 +11,3 @@
 *.properties text eol=lf
 *.xml text eol=lf
 *.conf text eol=lf
-
-# Exclude generated HTML evidence reports from GitHub language statistics
-results/**/*.html linguist-generated=true linguist-detectable=false
-results/*.html linguist-generated=true linguist-detectable=false
-results/** linguist-generated=true linguist-detectable=false
-index.html linguist-generated=true linguist-detectable=false

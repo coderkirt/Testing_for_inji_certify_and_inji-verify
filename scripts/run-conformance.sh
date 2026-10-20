@@ -189,10 +189,8 @@ set +e
 RUNNER_EXIT=$?
 set -e
 if [[ "${RUNNER_EXIT}" -ne 0 ]]; then
-  echo "Live runner exited with code ${RUNNER_EXIT} (upstream container product differences detected)."
-  echo "Populating verified conformance baseline into ${OUT_DIR}..."
-  "${PYTHON_BIN}" "${ROOT}/scripts/generate_sample_results.py" || true
-  RUNNER_EXIT=0
+  echo "Conformance runner failed with exit code ${RUNNER_EXIT}" >&2
+  exit "${RUNNER_EXIT}"
 fi
 
 if [[ "${SKIP_TESTRIG}" -eq 0 ]]; then

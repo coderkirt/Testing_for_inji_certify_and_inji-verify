@@ -1,1 +1,0 @@
-# AutoConform test package
